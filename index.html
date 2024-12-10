@@ -1,80 +1,79 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Winter- en Zomerband Adviseur</title>
-    <style>
+<meta charset="UTF-8">
+<title>Winter- en Zomerband Adviseur</title>
+<style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         #advice { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
-    </style>
+</style>
 </head>
 <body>
-    <h1>Winter- en Zomerband Adviseur</h1>
-    <p>Voer je locatie in om het beste moment te bepalen om je banden te wisselen.</p>
-    <input type="text" id="location" placeholder="Stad, Land">
-    <button onclick="getAdvice()">Advies Krijgen</button>
+<h1>Winter- en Zomerband Adviseur</h1>
+<p>Voer je locatie in om het beste moment te bepalen om je banden te wisselen.</p>
+<input type="text" id="location" placeholder="Stad, Land">
+<button onclick="getAdvice()">Advies Krijgen</button>
 
-    <div id="advice"></div>
+<div id="advice"></div>
 
-    <script>
-        async function getAdvice() {
-            const location = document.getElementById('location').value;
-            const apiKey = "JOUW_API_SLEUTEL_HIER";
-            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
+<script>
+async function getAdvice() {
+const location = document.getElementById('location').value;
+const apiKey = "API_KEY_PLACEHOLDER"; // Dit wordt vervangen tijdens het buildproces
+const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
 
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Locatie niet gevonden.');
-                }
-                const data = await response.json();
-                analyzeForecast(data);
-            } catch (error) {
+try {
+const response = await fetch(url);
+if (!response.ok) {
+throw new Error('Locatie niet gevonden.');
+}
+const data = await response.json();
+analyzeForecast(data);
+} catch (error) {
                 document.getElementById('advice').innerText = `Error: ${error.message}`;
-            }
-        }
+}
+}
 
-        function analyzeForecast(data) {
-            const forecastList = data.list;
-            let winterSuitableDays = [];
-            let summerSuitableDays = [];
-            
+function analyzeForecast(data) {
+const forecastList = data.list;
+let winterSuitableDays = [];
+let summerSuitableDays = [];
             forecastList.forEach(item => {
-                const date = new Date(item.dt_txt);
-                const temp = item.main.temp;
-                const weather = item.weather[0].main.toLowerCase();
+const date = new Date(item.dt_txt);
+const temp = item.main.temp;
+const weather = item.weather[0].main.toLowerCase();
 
-                if (temp < 7 && (weather.includes('snow') || weather.includes('ice') || weather.includes('rain'))) {
+if (temp < 7 && (weather.includes('snow') || weather.includes('ice') || weather.includes('rain'))) {
                     winterSuitableDays.push(date.toDateString());
-                } else if (temp >= 7 && weather.includes('clear')) {
+} else if (temp >= 7 && weather.includes('clear')) {
                     summerSuitableDays.push(date.toDateString());
-                }
-            });
+}
+});
 
-            let adviceText = '';
+let adviceText = '';
 
-            if (winterSuitableDays.length > 0) {
+if (winterSuitableDays.length > 0) {
                 adviceText += `<h3>Optimale dagen om naar winterbanden te wisselen:</h3><ul>`;
                 winterSuitableDays.slice(0, 3).forEach(day => {
                     adviceText += `<li>${day}</li>`;
-                });
+});
                 adviceText += `</ul>`;
-            } else {
+} else {
                 adviceText += `<p>Geen optimale dagen gevonden voor winterbanden in de komende week.</p>`;
-            }
+}
 
-            if (summerSuitableDays.length > 0) {
+if (summerSuitableDays.length > 0) {
                 adviceText += `<h3>Optimale dagen om naar zomerbanden te wisselen:</h3><ul>`;
                 summerSuitableDays.slice(0, 3).forEach(day => {
                     adviceText += `<li>${day}</li>`;
-                });
+});
                 adviceText += `</ul>`;
-            } else {
+} else {
                 adviceText += `<p>Geen optimale dagen gevonden voor zomerbanden in de komende week.</p>`;
-            }
+}
 
-            document.getElementById('advice').innerHTML = adviceText;
-        }
-    </script>
+document.getElementById('advice').innerHTML = adviceText;
+}
+</script>
 </body>
 </html>
