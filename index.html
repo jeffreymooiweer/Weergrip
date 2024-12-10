@@ -8,7 +8,7 @@
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 20px; /* Extra padding toegevoegd */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -16,6 +16,7 @@
       background-color: #121212;
       color: #ffffff;
       text-align: center;
+      box-sizing: border-box; /* Inclusief padding in de breedte */
     }
 
     h1 {
@@ -44,8 +45,12 @@
     }
 
     #advice {
-      margin-top: 20px;
+      margin-top: 30px; /* Meer ruimte boven de tekst */
       text-align: left;
+      padding: 20px; /* Padding toegevoegd */
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
     @media (max-width: 768px) {
@@ -59,6 +64,10 @@
 
       button {
         font-size: 0.9rem;
+      }
+
+      #advice {
+        padding: 15px; /* Minder padding op kleinere schermen */
       }
     }
   </style>
@@ -125,8 +134,7 @@
 
     function analyzeForecast(data) {
       const forecastList = data.list;
-      let winterSuitableDays = [];
-      let summerSuitableDays = [];
+      let bestDay = null;
 
       forecastList.forEach((item) => {
         const date = new Date(item.dt_txt);
@@ -134,35 +142,23 @@
         const weather = item.weather[0].main.toLowerCase();
 
         if (temp < 7 && (weather.includes('snow') || weather.includes('rain'))) {
-          winterSuitableDays.push(formatDate(date));
-        } else if (temp >= 7 && weather.includes('clear')) {
-          summerSuitableDays.push(formatDate(date));
+          bestDay = bestDay || { date: formatDate(date), reason: "Lage temperatuur en sneeuwval of regen maken dit een geschikt moment." };
+        } else if (temp >= 7 && weather.includes('clear') && !bestDay) {
+          bestDay = { date: formatDate(date), reason: "Helder weer met hogere temperaturen maakt dit een geschikte keuze." };
         }
       });
 
-      let adviceText = '';
-
-      if (winterSuitableDays.length > 0) {
-        adviceText += `<h3>Optimale dagen om naar winterbanden te wisselen:</h3><ul>`;
-        winterSuitableDays.slice(0, 3).forEach((day) => {
-          adviceText += `<li>${day}</li>`;
-        });
-        adviceText += `</ul>`;
+      if (bestDay) {
+        document.getElementById('advice').innerHTML = `
+          <h3>Optimale dag om je banden te wisselen:</h3>
+          <p><strong>${bestDay.date}</strong></p>
+          <p>${bestDay.reason}</p>
+        `;
       } else {
-        adviceText += `<p>Geen optimale dagen gevonden voor winterbanden in de komende week.</p>`;
+        document.getElementById('advice').innerHTML = `
+          <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
+        `;
       }
-
-      if (summerSuitableDays.length > 0) {
-        adviceText += `<h3>Optimale dagen om naar zomerbanden te wisselen:</h3><ul>`;
-        summerSuitableDays.slice(0, 3).forEach((day) => {
-          adviceText += `<li>${day}</li>`;
-        });
-        adviceText += `</ul>`;
-      } else {
-        adviceText += `<p>Geen optimale dagen gevonden voor zomerbanden in de komende week.</p>`;
-      }
-
-      document.getElementById('advice').innerHTML = adviceText;
     }
 
     function formatDate(date) {
