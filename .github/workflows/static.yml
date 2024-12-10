@@ -29,15 +29,28 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      # Stap 1: Checkout de code
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Stap 2: Injecteer de API-sleutel in index.html
+      - name: Replace API Key Placeholder
+        run: |
+          echo "Injecting API key..."
+          sed -i "s/API_KEY_PLACEHOLDER/${{ secrets.OPENWEATHERMAP_API_KEY }}/g" index.html
+
+      # Stap 3: Setup Pages voor het deployen
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      # Stap 4: Upload de artifact (alle bestanden)
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
           path: '.'
+
+      # Stap 5: Deploy naar GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
