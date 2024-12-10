@@ -1,79 +1,199 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<title>Winter- en Zomerband Adviseur</title>
-<style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #advice { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Winter- en Zomerband Adviseur</title>
+  <style>
+    /* Algemene reset en donkere stijl */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    #container {
+      text-align: center;
+      max-width: 600px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #1e1e1e;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      font-size: 1rem;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 4px;
+    }
+
+    input {
+      width: 100%;
+      max-width: 400px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+      max-width: 200px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #advice {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #2c2c2c;
+      border-radius: 4px;
+      text-align: left;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+
+      input, button {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
 </head>
 <body>
-<h1>Winter- en Zomerband Adviseur</h1>
-<p>Voer je locatie in om het beste moment te bepalen om je banden te wisselen.</p>
-<input type="text" id="location" placeholder="Stad, Land">
-<button onclick="getAdvice()">Advies Krijgen</button>
+  <div id="container">
+    <h1>Winter- en Zomerband Adviseur</h1>
+    <p>De weersvoorspelling wordt automatisch geladen op basis van je locatie.</p>
+    <input type="text" id="location" placeholder="Of voer je stad, land in">
+    <button onclick="getAdvice()">Advies Krijgen</button>
 
-<div id="advice"></div>
+    <div id="advice"></div>
+  </div>
 
-<script>
-async function getAdvice() {
-const location = document.getElementById('location').value;
-const apiKey = "API_KEY_PLACEHOLDER"; // Dit wordt vervangen tijdens het buildproces
-const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
+  <script>
+    async function getAdvice() {
+      let location = document.getElementById('location').value;
 
-try {
-const response = await fetch(url);
-if (!response.ok) {
-throw new Error('Locatie niet gevonden.');
-}
-const data = await response.json();
-analyzeForecast(data);
-} catch (error) {
-                document.getElementById('advice').innerText = `Error: ${error.message}`;
-}
-}
+      // Als locatie niet is ingevoerd, probeer automatisch locatie op te halen
+      if (!location) {
+        location = await getDeviceLocation();
+        if (!location) {
+          document.getElementById('advice').innerHTML =
+            '<p>Kon de locatie niet ophalen. Vul handmatig een locatie in.</p>';
+          return;
+        }
+      }
 
-function analyzeForecast(data) {
-const forecastList = data.list;
-let winterSuitableDays = [];
-let summerSuitableDays = [];
-            forecastList.forEach(item => {
-const date = new Date(item.dt_txt);
-const temp = item.main.temp;
-const weather = item.weather[0].main.toLowerCase();
+      const apiKey = "API_KEY_PLACEHOLDER"; // Vervang met je API-sleutel
+      const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
 
-if (temp < 7 && (weather.includes('snow') || weather.includes('ice') || weather.includes('rain'))) {
-                    winterSuitableDays.push(date.toDateString());
-} else if (temp >= 7 && weather.includes('clear')) {
-                    summerSuitableDays.push(date.toDateString());
-}
-});
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('Locatie niet gevonden.');
+        }
+        const data = await response.json();
+        analyzeForecast(data);
+      } catch (error) {
+        document.getElementById('advice').innerText = `Error: ${error.message}`;
+      }
+    }
 
-let adviceText = '';
+    async function getDeviceLocation() {
+      if (!navigator.geolocation) {
+        return null;
+      }
 
-if (winterSuitableDays.length > 0) {
-                adviceText += `<h3>Optimale dagen om naar winterbanden te wisselen:</h3><ul>`;
-                winterSuitableDays.slice(0, 3).forEach(day => {
-                    adviceText += `<li>${day}</li>`;
-});
-                adviceText += `</ul>`;
-} else {
-                adviceText += `<p>Geen optimale dagen gevonden voor winterbanden in de komende week.</p>`;
-}
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=API_KEY_PLACEHOLDER`;
 
-if (summerSuitableDays.length > 0) {
-                adviceText += `<h3>Optimale dagen om naar zomerbanden te wisselen:</h3><ul>`;
-                summerSuitableDays.slice(0, 3).forEach(day => {
-                    adviceText += `<li>${day}</li>`;
-});
-                adviceText += `</ul>`;
-} else {
-                adviceText += `<p>Geen optimale dagen gevonden voor zomerbanden in de komende week.</p>`;
-}
+            try {
+              const response = await fetch(geoApiUrl);
+              if (!response.ok) {
+                throw new Error('Locatie ophalen mislukt.');
+              }
+              const [geoData] = await response.json();
+              resolve(geoData.name);
+            } catch {
+              resolve(null);
+            }
+          },
+          () => resolve(null)
+        );
+      });
+    }
 
-document.getElementById('advice').innerHTML = adviceText;
-}
-</script>
+    function analyzeForecast(data) {
+      const forecastList = data.list;
+      let winterSuitableDays = [];
+      let summerSuitableDays = [];
+
+      forecastList.forEach((item) => {
+        const date = new Date(item.dt_txt);
+        const temp = item.main.temp;
+        const weather = item.weather[0].main.toLowerCase();
+
+        if (temp < 7 && (weather.includes('snow') || weather.includes('rain'))) {
+          winterSuitableDays.push(date.toDateString());
+        } else if (temp >= 7 && weather.includes('clear')) {
+          summerSuitableDays.push(date.toDateString());
+        }
+      });
+
+      let adviceText = '';
+
+      if (winterSuitableDays.length > 0) {
+        adviceText += `<h3>Optimale dagen om naar winterbanden te wisselen:</h3><ul>`;
+        winterSuitableDays.slice(0, 3).forEach((day) => {
+          adviceText += `<li>${day}</li>`;
+        });
+        adviceText += `</ul>`;
+      } else {
+        adviceText += `<p>Geen optimale dagen gevonden voor winterbanden in de komende week.</p>`;
+      }
+
+      if (summerSuitableDays.length > 0) {
+        adviceText += `<h3>Optimale dagen om naar zomerbanden te wisselen:</h3><ul>`;
+        summerSuitableDays.slice(0, 3).forEach((day) => {
+          adviceText += `<li>${day}</li>`;
+        });
+        adviceText += `</ul>`;
+      } else {
+        adviceText += `<p>Geen optimale dagen gevonden voor zomerbanden in de komende week.</p>`;
+      }
+
+      document.getElementById('advice').innerHTML = adviceText;
+    }
+  </script>
 </body>
 </html>
