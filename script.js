@@ -1,9 +1,12 @@
 async function getAdvice() {
   const adviceElement = document.getElementById("advice");
-  adviceElement.innerHTML = "<p>Even geduld, de voorspelling wordt geladen...</p>";
+  const adviceTextElement = document.getElementById("advice-text");
 
-  // Maak de adviescontainer zichtbaar
-  adviceElement.classList.add("show");
+  // Reset adviescontainer
+  adviceElement.innerHTML = "<p>Even geduld, de voorspelling wordt geladen...</p>";
+  adviceTextElement.innerHTML = "";
+  adviceElement.classList.remove("show");
+  adviceTextElement.classList.remove("show");
 
   const location = await getDeviceLocation();
   if (!location) {
@@ -21,7 +24,7 @@ async function getAdvice() {
     }
     const data = await response.json();
     console.log("Weersvoorspelling data ontvangen:", data); // Debugging
-    analyzeForecast(data);
+    analyzeForecast(data, adviceTextElement);
   } catch (error) {
     adviceElement.innerHTML = `<p>Error: ${error.message}</p>`;
     console.error("Weersvoorspelling fout:", error); // Debugging
@@ -64,7 +67,7 @@ async function getDeviceLocation() {
   });
 }
 
-function analyzeForecast(data) {
+function analyzeForecast(data, adviceTextElement) {
   const forecastList = data.list;
   let bestDay = null;
 
@@ -90,12 +93,14 @@ function analyzeForecast(data) {
 
   const adviceElement = document.getElementById("advice");
   if (bestDay) {
-    adviceElement.innerHTML = `
+    adviceElement.innerHTML = "";
+    adviceTextElement.innerHTML = `
       <h3>Optimale dag om je banden te wisselen:</h3>
       <p><strong>${bestDay.date}</strong></p>
       <p>${bestDay.reason}</p>
       <p><strong>Advies:</strong> Verwissel je banden naar <strong>${bestDay.type}</strong>.</p>
     `;
+    adviceTextElement.classList.add("show");
   } else {
     adviceElement.innerHTML = `
       <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
