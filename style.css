@@ -52,19 +52,18 @@ button:hover {
 
 #advice {
   position: absolute;
-  right: -300px; /* Start buiten het scherm aan de rechterkant */
-  top: 50%; /* Midden van het containergebied */
-  transform: translateY(-50%); /* Precisiecentrering */
-  width: 150px; /* Breedte van de auto */
-  height: auto;
-  background-image: url('./tesla-car-svg-by-Vexels.svg');
-  border: 2px dashed red; /* Tijdelijke indicator */
-  background-color: rgba(255, 255, 255, 0.2); /* Doorzichtige achtergrond */
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 150px; /* Zorg dat dit overeenkomt met de afbeelding */
+  height: 100px; /* Pas dit eventueel aan naar verhouding */
+  background-image: url('tesla-car-svg-by-Vexels.svg');
   background-size: contain;
   background-repeat: no-repeat;
-  opacity: 0; /* Start als onzichtbaar */
-  transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease; /* Animatie voor remweg */
+  background-position: center;
+  border: 2px solid red; /* Tijdelijk visuele grens */
 }
+
 
 #advice.show {
   right: 20px; /* Eindpositie op het scherm */
