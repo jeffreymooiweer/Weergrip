@@ -58,7 +58,8 @@ button:hover {
   width: 150px; /* Breedte van de auto */
   height: auto;
   background-image: url('./tesla-car-svg-by-Vexels.svg');
-  background-color: red; /* Tijdelijke testkleur */
+  border: 2px dashed red; /* Tijdelijke indicator */
+  background-color: rgba(255, 255, 255, 0.2); /* Doorzichtige achtergrond */
   background-size: contain;
   background-repeat: no-repeat;
   opacity: 0; /* Start als onzichtbaar */
