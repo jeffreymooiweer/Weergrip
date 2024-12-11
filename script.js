@@ -1,18 +1,34 @@
 async function getAdvice() {
-  const adviceElement = document.getElementById("advice");
   const adviceTextElement = document.getElementById("advice-text");
+  const carElement = document.getElementById("car");
 
-  // Reset adviescontainer
-  adviceElement.style.opacity = "0"; // Verberg container tijdens reset
+  // Reset adviescontainer en animatie
   adviceTextElement.innerHTML = "";
-  adviceElement.classList.remove("show");
-  adviceTextElement.classList.remove("show");
+  carElement.classList.remove("show");
+  const existingRemspoor = document.getElementById("remspoor");
+  if (existingRemspoor) {
+    existingRemspoor.remove();
+  }
+
+  // Voeg remspoor toe
+  const remspoor = document.createElement('div');
+  remspoor.id = 'remspoor';
+  document.getElementById("advice-container").appendChild(remspoor);
+
+  // Start animatie na een korte vertraging om reset te laten plaatsvinden
+  setTimeout(() => {
+    carElement.classList.add("show");
+  }, 100);
+
+  // Voeg remspoor klasse toe na de auto is gestopt
+  setTimeout(() => {
+    remspoor.classList.add("show");
+  }, 2500); // Pas de tijd aan op basis van de animatieduur
 
   const location = await getDeviceLocation();
   if (!location) {
     adviceTextElement.innerHTML =
       "<p>Kon de locatie niet ophalen. Zorg ervoor dat locatiebepaling is ingeschakeld en probeer opnieuw.</p>";
-    adviceTextElement.classList.add("show");
     return;
   }
 
@@ -30,11 +46,10 @@ async function getAdvice() {
     }
     const data = await response.json();
     console.log("Weersvoorspelling data ontvangen:", data); // Debugging
-    analyzeForecast(data, adviceTextElement, adviceElement);
+    analyzeForecast(data, adviceTextElement);
   } catch (error) {
     adviceTextElement.innerHTML = `<p>Error: ${error.message}</p>`;
     console.error("Weersvoorspelling fout:", error); // Debugging
-    adviceTextElement.classList.add("show");
   }
 }
 
@@ -77,7 +92,7 @@ async function getDeviceLocation() {
   });
 }
 
-function analyzeForecast(data, adviceTextElement, adviceElement) {
+function analyzeForecast(data, adviceTextElement) {
   const forecastList = data.list;
   let bestDay = null;
 
@@ -108,17 +123,10 @@ function analyzeForecast(data, adviceTextElement, adviceElement) {
       <p>${bestDay.reason}</p>
       <p><strong>Advies:</strong> Verwissel je banden naar <strong>${bestDay.type}</strong>.</p>
     `;
-    adviceTextElement.classList.add("show");
-
-    // Toon de adviescontainer met animatie
-    setTimeout(() => {
-      adviceElement.classList.add("show");
-    }, 500);
   } else {
     adviceTextElement.innerHTML = `
       <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
     `;
-    adviceTextElement.classList.add("show");
   }
 }
 
