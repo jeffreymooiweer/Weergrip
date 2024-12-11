@@ -57,7 +57,7 @@ button:hover {
   top: 50%; /* Midden van het containergebied */
   transform: translateY(-50%);
   width: 150px;
-  height: auto;
+  height: 100px;
   background-image: url('./tesla-car-svg-by-Vexels.svg') !important; /* Laad de Tesla SVG */
   background-size: contain;
   background-repeat: no-repeat;
