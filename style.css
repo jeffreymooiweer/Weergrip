@@ -47,17 +47,17 @@ button:hover {
   background-color: #1e1e1e;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  opacity: 0;
+  opacity: 0; /* Onzichtbaar bij het laden van de pagina */
   transform: translateY(30px);
-  visibility: hidden; /* Verberg initieel de container */
+  visibility: hidden; /* Verberg de container volledig */
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-/* Zorg dat de container zichtbaar blijft na de animatie */
+/* Maak de adviescontainer zichtbaar */
 #advice.show {
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
-  animation: slideUp 0.8s ease-in-out;
 }
 
 /* Animaties */
@@ -67,17 +67,6 @@ button:hover {
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
