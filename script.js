@@ -101,6 +101,9 @@ function analyzeForecast(data) {
       <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
     `;
   }
+
+  // Toon de adviescontainer met animatie
+  adviceElement.classList.add("show");
 }
 
 function formatDate(date) {
