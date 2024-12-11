@@ -46,48 +46,42 @@ button:hover {
 #advice-container {
   position: relative;
   width: 100%;
-  height: 150px;
+  height: 200px; /* Verhoogde hoogte voor betere weergave */
   margin-top: 30px;
   overflow: hidden; /* Verberg elementen buiten de container */
 }
 
-#advice {
+/* Styling voor de auto */
+#car {
   position: absolute;
-  right: -300px; /* Start buiten het scherm aan de rechterkant */
-  top: 50%; /* Midden van het containergebied */
-  transform: translateY(-50%);
+  right: -200px; /* Start buiten het scherm aan de rechterkant */
+  bottom: 0; /* Plaats de auto aan de onderkant van de container */
   width: 150px;
-  height: 100px; /* Voeg een vaste hoogte toe */
-  background-image: url('./tesla-car-svg-by-Vexels.svg'); /* Zorg voor correct pad */
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center; /* Centreer de afbeelding */
-  background-color: rgba(255, 255, 255, 0.1); /* Tijdelijke achtergrondkleur voor debugging */
+  height: auto;
   opacity: 0; /* Start als onzichtbaar */
-  transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease; /* Animatie voor remweg */
+  transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease;
 }
 
-#advice.show {
-  right: 20px; /* Eindpositie op het scherm */
+#car.show {
+  right: 50%; /* Stopt in het midden van de container */
+  transform: translateX(50%); /* Corrigeer voor exacte centrering */
   opacity: 1; /* Volledig zichtbaar */
 }
 
-
-/* Styling voor remspoor */
-#advice::after {
-  content: '';
+/* Remspoor styling */
+#remspoor {
   position: absolute;
-  bottom: 10%; /* Iets boven het midden van de auto */
-  left: -150px; /* Startpunt van het remspoor */
-  width: 0; /* Geen breedte bij de start */
-  height: 5px; /* Hoogte van het remspoor */
+  bottom: 20px; /* Plaats remspoor net onder de auto */
+  left: 50%;
+  width: 0;
+  height: 5px;
   background: linear-gradient(to right, rgba(255, 0, 0, 0.8), transparent);
   opacity: 0;
-  transition: opacity 0.5s ease, width 2s ease; /* Remspoor groeit in breedte */
+  transition: width 2s ease, opacity 1s ease 2s; /* Remspoor verschijnt na de auto */
 }
 
-#advice.show::after {
-  width: 300px; /* Remspoor groeit naar volledige breedte */
+#remspoor.show {
+  width: 300px; /* Lengte van het remspoor */
   opacity: 1;
 }
 
@@ -114,11 +108,11 @@ button:hover {
     font-size: 0.9rem;
   }
 
-  #advice {
+  #car {
     width: 120px;
   }
 
   #advice-container {
-    height: 120px;
+    height: 150px;
   }
 }
