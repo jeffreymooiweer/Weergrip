@@ -33,11 +33,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Stap 2: Injecteer de API-sleutel in index.html
+      # Stap 2: Injecteer de API-sleutel in script.js
       - name: Replace API Key Placeholder
         run: |
           echo "Injecting API key..."
-          sed -i "s/API_KEY_PLACEHOLDER/${{ secrets.OPENWEATHERMAP_API_KEY }}/g" index.html
+          sed -i "s/API_KEY_PLACEHOLDER/${{ secrets.OPENWEATHERMAP_API_KEY }}/g" script.js
 
       # Stap 3: Setup Pages voor het deployen
       - name: Setup Pages
