@@ -16,13 +16,11 @@ body {
 h1 {
   font-size: 1.8rem;
   margin-bottom: 20px;
-  animation: fadeIn 1.5s ease-in-out;
 }
 
 p {
   font-size: 1rem;
   margin-bottom: 20px;
-  animation: fadeIn 2s ease-in-out;
 }
 
 button {
@@ -47,27 +45,6 @@ button:hover {
   background-color: #1e1e1e;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  opacity: 0; /* Onzichtbaar bij het laden van de pagina */
-  transform: translateY(30px);
-  visibility: hidden; /* Verberg de container volledig */
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-/* Maak de adviescontainer zichtbaar */
-#advice.show {
-  opacity: 1;
-  transform: translateY(0);
-  visibility: visible;
-}
-
-/* Animaties */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 @media (max-width: 768px) {
