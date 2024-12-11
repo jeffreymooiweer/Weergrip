@@ -7,22 +7,22 @@ async function getAdvice() {
 
   const location = await getDeviceLocation();
   if (!location) {
-    adviceElement.innerHTML = "<p>Kon de locatie niet ophalen. Probeer het opnieuw.</p>";
+    adviceElement.innerHTML = "<p>Kon de locatie niet ophalen. Zorg ervoor dat locatiebepaling is ingeschakeld en probeer opnieuw.</p>";
     return;
   }
 
-  const apiKey = "API_KEY_PLACEHOLDER"; // Vervang met je API-sleutel
+  const apiKey = "API_KEY_PLACEHOLDER"; // Deze placeholder wordt vervangen door je API-sleutel via GitHub Actions
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error("Locatie niet gevonden.");
+      throw new Error("Locatie niet gevonden. Controleer of je locatie correct is ingesteld.");
     }
     const data = await response.json();
     analyzeForecast(data);
   } catch (error) {
-    adviceElement.innerText = `Error: ${error.message}`;
+    adviceElement.innerHTML = `<p>Error: ${error.message}</p>`;
   }
 }
 
@@ -31,7 +31,7 @@ async function getDeviceLocation() {
     return null;
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
@@ -40,15 +40,29 @@ async function getDeviceLocation() {
         try {
           const response = await fetch(geoApiUrl);
           if (!response.ok) {
-            throw new Error("Locatie ophalen mislukt.");
+            throw new Error("Locatiegegevens ophalen mislukt.");
           }
           const [geoData] = await response.json();
-          resolve(geoData.name);
+          resolve(geoData?.name || null);
         } catch {
           resolve(null);
         }
       },
-      () => resolve(null)
+      (error) => {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            reject("Toegang tot locatie geweigerd. Sta locatiebepaling toe en probeer opnieuw.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            reject("Locatie-informatie niet beschikbaar.");
+            break;
+          case error.TIMEOUT:
+            reject("De aanvraag voor locatie is verlopen. Probeer het opnieuw.");
+            break;
+          default:
+            reject("Onbekende fout bij het ophalen van locatie.");
+        }
+      }
     );
   });
 }
