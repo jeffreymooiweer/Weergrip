@@ -1,7 +1,9 @@
 async function getAdvice() {
   const adviceElement = document.getElementById("advice");
   adviceElement.innerHTML = "<p>Even geduld, de voorspelling wordt geladen...</p>";
-  adviceElement.style.animation = "fadeIn 1s ease-in-out";
+
+  // Maak de adviescontainer zichtbaar
+  adviceElement.classList.add("show");
 
   const location = await getDeviceLocation();
   if (!location) {
