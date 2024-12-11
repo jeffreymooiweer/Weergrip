@@ -46,7 +46,7 @@ button:hover {
 #advice-container {
   position: relative;
   width: 100%;
-  height: 200px; /* Hoogte van de animatiezone */
+  height: 150px;
   margin-top: 30px;
   overflow: hidden; /* Verberg elementen buiten de container */
 }
@@ -62,12 +62,12 @@ button:hover {
   background-size: contain;
   background-repeat: no-repeat;
   opacity: 0; /* Start als onzichtbaar */
-  transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease; /* Animatie voor remweg */
+  transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease; /* Animatie voor remweg */
 }
 
 #advice.show {
   right: 20px; /* Eindpositie op het scherm */
-  opacity: 1;
+  opacity: 1; /* Volledig zichtbaar */
 }
 
 /* Styling voor remspoor */
