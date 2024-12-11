@@ -3,31 +3,38 @@ async function getAdvice() {
   const adviceTextElement = document.getElementById("advice-text");
 
   // Reset adviescontainer
-  adviceElement.innerHTML = "<p>Even geduld, de voorspelling wordt geladen...</p>";
+  adviceElement.style.opacity = "0"; // Verberg container tijdens reset
   adviceTextElement.innerHTML = "";
   adviceElement.classList.remove("show");
   adviceTextElement.classList.remove("show");
 
   const location = await getDeviceLocation();
   if (!location) {
-    adviceElement.innerHTML = "<p>Kon de locatie niet ophalen. Zorg ervoor dat locatiebepaling is ingeschakeld en probeer opnieuw.</p>";
+    adviceTextElement.innerHTML =
+      "<p>Kon de locatie niet ophalen. Zorg ervoor dat locatiebepaling is ingeschakeld en probeer opnieuw.</p>";
+    adviceTextElement.classList.add("show");
     return;
   }
 
   const apiKey = "API_KEY_PLACEHOLDER"; // Deze placeholder wordt vervangen via GitHub Actions
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
+  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
+    location
+  )}&units=metric&appid=${apiKey}`;
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error("Locatie niet gevonden. Controleer of je locatie correct is ingesteld.");
+      throw new Error(
+        "Locatie niet gevonden. Controleer of je locatie correct is ingesteld."
+      );
     }
     const data = await response.json();
     console.log("Weersvoorspelling data ontvangen:", data); // Debugging
-    analyzeForecast(data, adviceTextElement);
+    analyzeForecast(data, adviceTextElement, adviceElement);
   } catch (error) {
-    adviceElement.innerHTML = `<p>Error: ${error.message}</p>`;
+    adviceTextElement.innerHTML = `<p>Error: ${error.message}</p>`;
     console.error("Weersvoorspelling fout:", error); // Debugging
+    adviceTextElement.classList.add("show");
   }
 }
 
@@ -43,7 +50,10 @@ async function getDeviceLocation() {
         const { latitude, longitude } = position.coords;
         const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=API_KEY_PLACEHOLDER`;
 
-        console.log("Geolocatie coördinaten ontvangen:", { latitude, longitude }); // Debugging
+        console.log("Geolocatie coördinaten ontvangen:", {
+          latitude,
+          longitude,
+        }); // Debugging
         console.log("Geocoding URL:", geoApiUrl); // Debugging
 
         try {
@@ -67,7 +77,7 @@ async function getDeviceLocation() {
   });
 }
 
-function analyzeForecast(data, adviceTextElement) {
+function analyzeForecast(data, adviceTextElement, adviceElement) {
   const forecastList = data.list;
   let bestDay = null;
 
@@ -91,9 +101,7 @@ function analyzeForecast(data, adviceTextElement) {
     }
   });
 
-  const adviceElement = document.getElementById("advice");
   if (bestDay) {
-    adviceElement.innerHTML = "";
     adviceTextElement.innerHTML = `
       <h3>Optimale dag om je banden te wisselen:</h3>
       <p><strong>${bestDay.date}</strong></p>
@@ -102,13 +110,16 @@ function analyzeForecast(data, adviceTextElement) {
     `;
     adviceTextElement.classList.add("show");
   } else {
-    adviceElement.innerHTML = `
+    adviceTextElement.innerHTML = `
       <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
     `;
+    adviceTextElement.classList.add("show");
   }
 
   // Toon de adviescontainer met animatie
-  adviceElement.classList.add("show");
+  setTimeout(() => {
+    adviceElement.classList.add("show");
+  }, 500);
 }
 
 function formatDate(date) {
