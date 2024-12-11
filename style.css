@@ -58,10 +58,9 @@ button:hover {
   transform: translateY(-50%);
   width: 150px;
   height: auto;
-  background-image: url('./tesla-car-svg-by-Vexels.svg'); /* Laad de Tesla SVG */
+  background-image: url('./tesla-car-svg-by-Vexels.svg') !important; /* Laad de Tesla SVG */
   background-size: contain;
   background-repeat: no-repeat;
-  opacity: 0; /* Start als onzichtbaar */
   transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease; /* Animatie voor remweg */
 }
 
