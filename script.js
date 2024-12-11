@@ -11,7 +11,7 @@ async function getAdvice() {
     return;
   }
 
-  const apiKey = "API_KEY_PLACEHOLDER"; // Deze placeholder wordt vervangen door je API-sleutel via GitHub Actions
+  const apiKey = "API_KEY_PLACEHOLDER"; // Deze placeholder wordt vervangen via GitHub Actions
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&units=metric&appid=${apiKey}`;
 
   try {
@@ -20,48 +20,45 @@ async function getAdvice() {
       throw new Error("Locatie niet gevonden. Controleer of je locatie correct is ingesteld.");
     }
     const data = await response.json();
+    console.log("Weersvoorspelling data ontvangen:", data); // Debugging
     analyzeForecast(data);
   } catch (error) {
     adviceElement.innerHTML = `<p>Error: ${error.message}</p>`;
+    console.error("Weersvoorspelling fout:", error); // Debugging
   }
 }
 
 async function getDeviceLocation() {
   if (!navigator.geolocation) {
-    return null;
+    console.warn("Geolocatie niet beschikbaar. Gebruik fallbacklocatie.");
+    return "Amsterdam"; // Fallbacklocatie
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=API_KEY_PLACEHOLDER`;
 
+        console.log("Geolocatie coördinaten ontvangen:", { latitude, longitude }); // Debugging
+        console.log("Geocoding URL:", geoApiUrl); // Debugging
+
         try {
           const response = await fetch(geoApiUrl);
           if (!response.ok) {
-            throw new Error("Locatiegegevens ophalen mislukt.");
+            throw new Error("Geocoding API gaf een fout.");
           }
           const [geoData] = await response.json();
-          resolve(geoData?.name || null);
-        } catch {
-          resolve(null);
+          console.log("Gegevens ontvangen van Geocoding API:", geoData); // Debugging
+          resolve(geoData.name);
+        } catch (error) {
+          console.error("Geocoding API fout:", error); // Debugging
+          resolve("Amsterdam"); // Fallbacklocatie
         }
       },
       (error) => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            reject("Toegang tot locatie geweigerd. Sta locatiebepaling toe en probeer opnieuw.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            reject("Locatie-informatie niet beschikbaar.");
-            break;
-          case error.TIMEOUT:
-            reject("De aanvraag voor locatie is verlopen. Probeer het opnieuw.");
-            break;
-          default:
-            reject("Onbekende fout bij het ophalen van locatie.");
-        }
+        console.error("Geolocatiefout:", error); // Debugging
+        resolve("Amsterdam"); // Fallbacklocatie
       }
     );
   });
