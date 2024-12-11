@@ -109,17 +109,17 @@ function analyzeForecast(data, adviceTextElement, adviceElement) {
       <p><strong>Advies:</strong> Verwissel je banden naar <strong>${bestDay.type}</strong>.</p>
     `;
     adviceTextElement.classList.add("show");
+
+    // Toon de adviescontainer met animatie
+    setTimeout(() => {
+      adviceElement.classList.add("show");
+    }, 500);
   } else {
     adviceTextElement.innerHTML = `
       <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
     `;
     adviceTextElement.classList.add("show");
   }
-
-  // Toon de adviescontainer met animatie
-  setTimeout(() => {
-    adviceElement.classList.add("show");
-  }, 500);
 }
 
 function formatDate(date) {
