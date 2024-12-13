@@ -1,29 +1,49 @@
+// script.js
+
+// Functie om het "Advies Krijgen" button click te verwerken
 async function getAdvice() {
   const adviceTextElement = document.getElementById("advice-text");
   const carElement = document.getElementById("car");
+  const adviceContainer = document.getElementById("advice-container");
 
   // Reset adviescontainer en animatie
   adviceTextElement.innerHTML = "";
+  adviceTextElement.classList.remove("show");
   carElement.classList.remove("show");
+  
   const existingRemspoor = document.getElementById("remspoor");
   if (existingRemspoor) {
     existingRemspoor.remove();
   }
 
   // Voeg remspoor toe
-  const remspoor = document.createElement('div');
-  remspoor.id = 'remspoor';
-  document.getElementById("advice-container").appendChild(remspoor);
+  const remspoor = document.createElement("div");
+  remspoor.id = "remspoor";
+  adviceContainer.appendChild(remspoor);
 
   // Start animatie na een korte vertraging om reset te laten plaatsvinden
   setTimeout(() => {
     carElement.classList.add("show");
   }, 100);
 
-  // Voeg remspoor klasse toe na de auto is gestopt
+  // Voeg remspoor klasse toe na de auto is gestopt (2 seconden animatie)
   setTimeout(() => {
     remspoor.classList.add("show");
-  }, 2500); // Pas de tijd aan op basis van de animatieduur
+  }, 2100); // 100ms + 2000ms animatie van de auto
+
+  // Voeg advies tekst toe na de remspoor animatie (1 seconde later)
+  setTimeout(() => {
+    loadAdvice();
+  }, 3200); // 2100ms + 1100ms voor remspoor
+}
+
+// Functie om het advies te laden na de animaties
+async function loadAdvice() {
+  const adviceTextElement = document.getElementById("advice-text");
+
+  // Voeg een laadindicator toe
+  adviceTextElement.innerHTML = "<p>Advies wordt geladen...</p>";
+  adviceTextElement.classList.add("show");
 
   const location = await getDeviceLocation();
   if (!location) {
@@ -32,7 +52,7 @@ async function getAdvice() {
     return;
   }
 
-  const apiKey = "API_KEY_PLACEHOLDER"; // Deze placeholder wordt vervangen via GitHub Actions
+  const apiKey = "API_KEY_PLACEHOLDER"; // Vervang met jouw API-sleutel
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
     location
   )}&units=metric&appid=${apiKey}`;
@@ -45,14 +65,13 @@ async function getAdvice() {
       );
     }
     const data = await response.json();
-    console.log("Weersvoorspelling data ontvangen:", data); // Debugging
     analyzeForecast(data, adviceTextElement);
   } catch (error) {
     adviceTextElement.innerHTML = `<p>Error: ${error.message}</p>`;
-    console.error("Weersvoorspelling fout:", error); // Debugging
   }
 }
 
+// Functie om de locatie van de gebruiker te verkrijgen, met fallback naar Amsterdam
 async function getDeviceLocation() {
   if (!navigator.geolocation) {
     console.warn("Geolocatie niet beschikbaar. Gebruik fallbacklocatie.");
@@ -65,38 +84,32 @@ async function getDeviceLocation() {
         const { latitude, longitude } = position.coords;
         const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=API_KEY_PLACEHOLDER`;
 
-        console.log("Geolocatie coördinaten ontvangen:", {
-          latitude,
-          longitude,
-        }); // Debugging
-        console.log("Geocoding URL:", geoApiUrl); // Debugging
-
         try {
           const response = await fetch(geoApiUrl);
           if (!response.ok) {
             throw new Error("Geocoding API gaf een fout.");
           }
           const [geoData] = await response.json();
-          console.log("Gegevens ontvangen van Geocoding API:", geoData); // Debugging
-          resolve(geoData.name);
-        } catch (error) {
-          console.error("Geocoding API fout:", error); // Debugging
+          if (geoData && geoData.name) {
+            resolve(geoData.name);
+          } else {
+            resolve("Amsterdam");
+          }
+        } catch {
           resolve("Amsterdam"); // Fallbacklocatie
         }
       },
-      (error) => {
-        console.error("Geolocatiefout:", error); // Debugging
-        resolve("Amsterdam"); // Fallbacklocatie
-      }
+      () => resolve("Amsterdam") // Fallbacklocatie bij fout
     );
   });
 }
 
+// Functie om de weersvoorspelling te analyseren en de beste dag te bepalen
 function analyzeForecast(data, adviceTextElement) {
   const forecastList = data.list;
   let bestDay = null;
 
-  forecastList.forEach((item) => {
+  for (const item of forecastList) {
     const date = new Date(item.dt_txt);
     const temp = item.main.temp;
     const weather = item.weather[0].main.toLowerCase();
@@ -114,7 +127,7 @@ function analyzeForecast(data, adviceTextElement) {
         type: "zomerbanden",
       };
     }
-  });
+  }
 
   if (bestDay) {
     adviceTextElement.innerHTML = `
@@ -128,8 +141,11 @@ function analyzeForecast(data, adviceTextElement) {
       <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
     `;
   }
+
+  adviceTextElement.classList.add("show");
 }
 
+// Functie om de datum te formatteren in het Nederlands
 function formatDate(date) {
   const days = [
     "Zondag",
@@ -162,3 +178,6 @@ function formatDate(date) {
 
   return `${dayName} ${day} ${month} ${year}`;
 }
+
+// Event listener voor de "Advies Krijgen" knop
+document.getElementById("get-advice-button").addEventListener("click", getAdvice);
