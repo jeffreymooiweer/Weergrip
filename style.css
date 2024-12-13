@@ -15,39 +15,43 @@ body {
   box-sizing: border-box;
 }
 
+/* Stijl voor de main-container */
+.main-container {
+  max-width: 600px;
+  width: 100%;
+}
+
 h1 {
-  font-size: 1.8rem;
+  font-size: 2rem;
   margin-bottom: 20px;
-  animation: fadeIn 1.5s ease-in-out;
 }
 
 p {
-  font-size: 1rem;
-  margin-bottom: 20px;
-  animation: fadeIn 2s ease-in-out;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
 }
 
 button {
   font-size: 1rem;
-  padding: 10px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   background-color: #007BFF;
   color: #fff;
   cursor: pointer;
-  max-width: 200px;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
   background-color: #0056b3;
 }
 
-/* Container voor auto-animatie */
+/* Container voor auto-animatie en advies */
 #advice-container {
   position: relative;
   width: 100%;
-  height: 200px; /* Verhoogde hoogte voor betere weergave */
-  margin-top: 30px;
+  height: 300px;
+  margin-top: 50px;
   overflow: hidden; /* Verberg elementen buiten de container */
 }
 
@@ -55,64 +59,97 @@ button:hover {
 #car {
   position: absolute;
   right: -200px; /* Start buiten het scherm aan de rechterkant */
-  bottom: 0; /* Plaats de auto aan de onderkant van de container */
+  bottom: 60px; /* Plaats de auto boven de advies-tekst */
   width: 150px;
   height: auto;
   opacity: 0; /* Start als onzichtbaar */
   transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease;
+  z-index: 10; /* Zorgt ervoor dat de auto boven andere elementen staat */
 }
 
+/* Klasse om de animatie te starten */
 #car.show {
   right: 50%; /* Stopt in het midden van de container */
-  transform: translateX(50%); /* Corrigeer voor exacte centrering */
+  transform: translateX(50%); /* Centreer de auto */
   opacity: 1; /* Volledig zichtbaar */
 }
 
 /* Remspoor styling */
 #remspoor {
   position: absolute;
-  bottom: 20px; /* Plaats remspoor net onder de auto */
-  left: 50%;
+  bottom: 115px; /* Zelfde als de auto */
+  left: 63%;
+  transform: translateX(-50%);
   width: 0;
   height: 5px;
   background: linear-gradient(to right, rgba(255, 0, 0, 0.8), transparent);
   opacity: 0;
-  transition: width 2s ease, opacity 1s ease 2s; /* Remspoor verschijnt na de auto */
+  transition: width 2s ease, opacity 1s ease;
+  z-index: 5; /* Remspoor onder de auto */
 }
 
+/* Klasse om remspoor te tonen */
 #remspoor.show {
   width: 300px; /* Lengte van het remspoor */
   opacity: 1;
 }
 
-/* Fade-in animaties */
+/* Advies-tekst onder de auto */
+#advice-text {
+  position: absolute;
+  bottom: 10px; /* Onder de auto */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 1rem;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+/* Klasse om advies-tekst te tonen */
+#advice-text.show {
+  opacity: 1;
+}
+
+/* Responsieve aanpassingen */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  p {
+    font-size: 1rem;
+  }
+
+  button {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+
+  #car {
+    width: 120px;
+    bottom: 50px;
+  }
+
+  #advice-container {
+    height: 250px;
+  }
+
+  #remspoor.show {
+    width: 200px; /* Aanpassen voor kleinere schermen */
+  }
+
+  #advice-text {
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra animatie voor fade-in */
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  p {
-    font-size: 0.9rem;
-  }
-
-  button {
-    font-size: 0.9rem;
-  }
-
-  #car {
-    width: 120px;
-  }
-
-  #advice-container {
-    height: 150px;
   }
 }
