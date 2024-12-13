@@ -4,7 +4,7 @@
 async function getAdvice() {
   const adviceTextElement = document.getElementById("advice-text");
   const carElement = document.getElementById("car");
-  const adviceContainer = document.getElementById("advice-container");
+  const animationContainer = document.getElementById("animation-container");
 
   // Reset adviescontainer en animatie
   adviceTextElement.innerHTML = "";
@@ -19,7 +19,7 @@ async function getAdvice() {
   // Voeg remspoor toe
   const remspoor = document.createElement("div");
   remspoor.id = "remspoor";
-  adviceContainer.appendChild(remspoor);
+  animationContainer.appendChild(remspoor);
 
   // Start animatie na een korte vertraging om reset te laten plaatsvinden
   setTimeout(() => {
@@ -82,7 +82,7 @@ async function getDeviceLocation() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=API_KEY_PLACEHOLDER`;
+        const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${apiKey}`;
 
         try {
           const response = await fetch(geoApiUrl);
