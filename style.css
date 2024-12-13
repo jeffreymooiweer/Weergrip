@@ -46,11 +46,11 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Container voor auto-animatie en advies */
-#advice-container {
+/* Container voor auto-animatie */
+#animation-container {
   position: relative;
   width: 100%;
-  height: 300px;
+  height: 300px; /* Voldoende ruimte voor animatie */
   margin-top: 50px;
   overflow: hidden; /* Verberg elementen buiten de container */
 }
@@ -59,12 +59,12 @@ button:hover {
 #car {
   position: absolute;
   right: -200px; /* Start buiten het scherm aan de rechterkant */
-  bottom: 60px; /* Plaats de auto boven de advies-tekst */
+  bottom: 60px; /* Plaats de auto boven het advies-tekst gebied */
   width: 150px;
   height: auto;
   opacity: 0; /* Start als onzichtbaar */
   transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease;
-  z-index: 10; /* Zorgt ervoor dat de auto boven andere elementen staat */
+  z-index: 10; /* Zorgt ervoor dat de auto boven remspoor staat */
 }
 
 /* Klasse om de animatie te starten */
@@ -77,8 +77,8 @@ button:hover {
 /* Remspoor styling */
 #remspoor {
   position: absolute;
-  bottom: 115px; /* Zelfde als de auto */
-  left: 63%;
+  bottom: 60px; /* Zelfde als de auto */
+  left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 5px;
@@ -94,12 +94,9 @@ button:hover {
   opacity: 1;
 }
 
-/* Advies-tekst onder de auto */
+/* Advies-tekst onder de animatie */
 #advice-text {
-  position: absolute;
-  bottom: 10px; /* Onder de auto */
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 50px; /* Ruimte tussen animatie en advies */
   text-align: center;
   font-size: 1rem;
   opacity: 0;
@@ -131,7 +128,7 @@ button:hover {
     bottom: 50px;
   }
 
-  #advice-container {
+  #animation-container {
     height: 250px;
   }
 
