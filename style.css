@@ -5,17 +5,14 @@ body {
   padding: 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-direction: column;
   min-height: 100vh;
   background-color: #121212;
   color: #ffffff;
-  overflow: hidden; /* Verberg scrollbars veroorzaakt door animaties */
   text-align: center;
   box-sizing: border-box;
 }
 
-/* Stijl voor de main-container */
 .main-container {
   max-width: 600px;
   width: 100%;
@@ -46,57 +43,54 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Container voor auto-animatie */
+/* Animation Container */
 #animation-container {
   position: relative;
   width: 100%;
-  height: 300px; /* Voldoende ruimte voor animatie */
+  height: 200px;
   margin-top: 50px;
-  overflow: hidden; /* Verberg elementen buiten de container */
+  overflow: hidden;
+}
+
+/* Car Container */
+#car-container {
+  position: absolute;
+  right: -200px; /* Start buiten het scherm aan de rechterkant */
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: right 2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Klasse om de animatie te starten */
+#car-container.show {
+  right: 50%;
+  transform: translateX(50%);
 }
 
 /* Styling voor de auto */
 #car {
-  position: absolute;
-  right: -200px; /* Start buiten het scherm aan de rechterkant */
-  bottom: 60px; /* Plaats de auto boven het advies-tekst gebied */
   width: 150px;
   height: auto;
-  opacity: 0; /* Start als onzichtbaar */
-  transition: right 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease;
   z-index: 10; /* Zorgt ervoor dat de auto boven remspoor staat */
-}
-
-/* Klasse om de animatie te starten */
-#car.show {
-  right: 50%; /* Stopt in het midden van de container */
-  transform: translateX(50%); /* Centreer de auto */
-  opacity: 1; /* Volledig zichtbaar */
 }
 
 /* Remspoor styling */
 #remspoor {
   position: absolute;
-  bottom: 60px; /* Zelfde als de auto */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
+  width: 300px; /* Lengte remspoor */
+  bottom: 55px;
+  left: 31px;
   height: 5px;
   background: linear-gradient(to right, rgba(255, 0, 0, 0.8), transparent);
-  opacity: 0;
-  transition: width 2s ease, opacity 1s ease;
+  margin-top: -5px; /* Zodat het remspoor direct onder de auto staat */
   z-index: 5; /* Remspoor onder de auto */
-}
-
-/* Klasse om remspoor te tonen */
-#remspoor.show {
-  width: 300px; /* Lengte van het remspoor */
-  opacity: 1;
 }
 
 /* Advies-tekst onder de animatie */
 #advice-text {
-  margin-top: 50px; /* Ruimte tussen animatie en advies */
+  margin-top: 50px;
   text-align: center;
   font-size: 1rem;
   opacity: 0;
@@ -106,6 +100,15 @@ button:hover {
 /* Klasse om advies-tekst te tonen */
 #advice-text.show {
   opacity: 1;
+}
+
+/* Disclaimer stijl */
+#disclaimer {
+  margin-top: 40px;
+  max-width: 600px;
+  font-size: 0.8rem;
+  color: #cccccc;
+  line-height: 1.4;
 }
 
 /* Responsieve aanpassingen */
@@ -124,29 +127,22 @@ button:hover {
   }
 
   #car {
-    width: 120px;
-    bottom: 50px;
+    width: 150px;
+  }
+
+  #remspoor {
+    width: 200px; /* Aanpassen voor kleinere schermen */
   }
 
   #animation-container {
-    height: 250px;
-  }
-
-  #remspoor.show {
-    width: 200px; /* Aanpassen voor kleinere schermen */
+    height: 180px;
   }
 
   #advice-text {
     font-size: 0.9rem;
   }
-}
 
-/* Extra animatie voor fade-in */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+  #disclaimer {
+    font-size: 0.7rem;
   }
 }
