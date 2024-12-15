@@ -5,6 +5,7 @@ body {
   padding: 20px;
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-direction: column;
   min-height: 100vh;
   background-color: #121212;
@@ -13,6 +14,16 @@ body {
   box-sizing: border-box;
 }
 
+.logo-container {
+  margin-bottom: 20px; /* Ruimte tussen logo en main-container */
+}
+
+#logo {
+  width: 150px; /* Pas de breedte aan naar wens */
+  height: auto;
+}
+
+/* Stijl voor de main-container */
 .main-container {
   max-width: 600px;
   width: 100%;
@@ -48,7 +59,7 @@ button:hover {
   position: relative;
   width: 100%;
   height: 200px;
-  margin-top: 10px;
+  margin-top: 50px;
   overflow: hidden;
 }
 
@@ -126,8 +137,12 @@ button:hover {
     padding: 10px 20px;
   }
 
+  #logo {
+    width: 120px; /* Kleinere logo op mobiele apparaten */
+  }
+
   #car {
-    width: 150px;
+    width: 120px;
   }
 
   #remspoor {
