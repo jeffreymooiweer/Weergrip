@@ -1,40 +1,37 @@
 // script.js
 
+const apiKey = "API_KEY_PLACEHOLDER"; // Vervang met jouw API-sleutel
+
 // Functie om het "Advies Krijgen" button click te verwerken
 async function getAdvice() {
   const adviceTextElement = document.getElementById("advice-text");
-  const carElement = document.getElementById("car");
+  const carContainer = document.getElementById("car-container");
   const animationContainer = document.getElementById("animation-container");
 
   // Reset adviescontainer en animatie
   adviceTextElement.innerHTML = "";
   adviceTextElement.classList.remove("show");
-  carElement.classList.remove("show");
+  carContainer.classList.remove("show");
   
   const existingRemspoor = document.getElementById("remspoor");
   if (existingRemspoor) {
     existingRemspoor.remove();
   }
 
-  // Voeg remspoor toe
+  // Voeg remspoor toe binnen de car-container
   const remspoor = document.createElement("div");
   remspoor.id = "remspoor";
-  animationContainer.appendChild(remspoor);
+  carContainer.appendChild(remspoor);
 
   // Start animatie na een korte vertraging om reset te laten plaatsvinden
   setTimeout(() => {
-    carElement.classList.add("show");
+    carContainer.classList.add("show");
   }, 100);
 
-  // Voeg remspoor klasse toe na de auto is gestopt (2 seconden animatie)
-  setTimeout(() => {
-    remspoor.classList.add("show");
-  }, 2100); // 100ms + 2000ms animatie van de auto
-
-  // Voeg advies tekst toe na de remspoor animatie (1 seconde later)
+  // Voeg advies tekst toe na de animatie (2 seconden animatie + extra vertraging)
   setTimeout(() => {
     loadAdvice();
-  }, 3200); // 2100ms + 1100ms voor remspoor
+  }, 2200);
 }
 
 // Functie om het advies te laden na de animaties
@@ -52,7 +49,6 @@ async function loadAdvice() {
     return;
   }
 
-  const apiKey = "API_KEY_PLACEHOLDER"; // Vervang met jouw API-sleutel
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
     location
   )}&units=metric&appid=${apiKey}`;
@@ -107,38 +103,47 @@ async function getDeviceLocation() {
 // Functie om de weersvoorspelling te analyseren en de beste dag te bepalen
 function analyzeForecast(data, adviceTextElement) {
   const forecastList = data.list;
-  let bestDay = null;
+  let coldDays = 0;
+  let startIndex = -1;
+  const requiredColdDays = 7;
+  const temperatureThreshold = 7; // Graden Celsius
 
-  for (const item of forecastList) {
-    const date = new Date(item.dt_txt);
-    const temp = item.main.temp;
-    const weather = item.weather[0].main.toLowerCase();
+  // Loop door de forecast data om minimaal 7 dagen onder 7°C te vinden
+  for (let i = 0; i < forecastList.length; i++) {
+    const item = forecastList[i];
+    const temp = item.main.temp_min;
 
-    if (temp < 7 && (weather.includes("snow") || weather.includes("rain"))) {
-      bestDay = bestDay || {
-        date: formatDate(date),
-        reason: "Lage temperatuur en sneeuwval of regen maken dit een geschikt moment.",
-        type: "winterbanden",
-      };
-    } else if (temp >= 7 && weather.includes("clear") && !bestDay) {
-      bestDay = {
-        date: formatDate(date),
-        reason: "Helder weer met hogere temperaturen maakt dit een geschikte keuze.",
-        type: "zomerbanden",
-      };
+    if (temp < temperatureThreshold) {
+      if (coldDays === 0) {
+        startIndex = i;
+      }
+      coldDays++;
+      if (coldDays >= requiredColdDays) {
+        break;
+      }
+    } else {
+      coldDays = 0;
+      startIndex = -1;
     }
   }
 
-  if (bestDay) {
+  if (coldDays >= requiredColdDays && startIndex !== -1) {
+    // Advies voor winterbanden
+    const startDate = new Date(forecastList[startIndex].dt_txt);
+    const endDate = new Date(forecastList[startIndex + requiredColdDays - 1].dt_txt);
     adviceTextElement.innerHTML = `
-      <h3>Optimale dag om je banden te wisselen:</h3>
-      <p><strong>${bestDay.date}</strong></p>
-      <p>${bestDay.reason}</p>
-      <p><strong>Advies:</strong> Verwissel je banden naar <strong>${bestDay.type}</strong>.</p>
+      <h3>Advies voor het wisselen van banden:</h3>
+      <p>Op basis van de weersvoorspelling is het aanbevolen om winterbanden te gebruiken van <strong>${formatDate(startDate)}</strong> tot <strong>${formatDate(endDate)}</strong>.</p>
+      <p>Dit is gebaseerd op minimaal ${requiredColdDays} dagen met temperaturen onder de ${temperatureThreshold}°C.</p>
+      <p><strong>Disclaimer:</strong> Hier mogen geen rechten aan ontleend worden. Ik ben niet aansprakelijk voor enige schade voortvloeiend uit het gebruik van deze informatie.</p>
     `;
   } else {
+    // Advies voor zomerbanden
     adviceTextElement.innerHTML = `
-      <p>Geen geschikte dag gevonden in de komende week. Controleer later opnieuw.</p>
+      <h3>Advies voor het wisselen van banden:</h3>
+      <p>Op basis van de weersvoorspelling is het aanbevolen om zomerbanden te gebruiken.</p>
+      <p>De temperaturen blijven boven de ${temperatureThreshold}°C, wat optimale prestaties van zomerbanden garandeert.</p>
+      <p><strong>Disclaimer:</strong> Hier mogen geen rechten aan ontleend worden. Ik ben niet aansprakelijk voor enige schade voortvloeiend uit het gebruik van deze informatie.</p>
     `;
   }
 
