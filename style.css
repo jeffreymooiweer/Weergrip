@@ -21,6 +21,8 @@ body {
 #logo {
   width: 260px; /* Pas de breedte aan naar wens */
   height: auto;
+  display: block; /* Verwijdert eventuele inline spacing */
+  margin: 0 auto; /* Centreert het logo binnen de container */
 }
 
 /* Stijl voor de main-container */
@@ -117,9 +119,15 @@ button:hover {
 #disclaimer {
   margin-top: 40px;
   max-width: 600px;
-  font-size: 0.8rem;
+  font-size: 0.7rem; /* Verlaagd van 0.8rem naar 0.7rem voor kleinere tekst */
   color: #cccccc;
   line-height: 1.4;
+  text-align: center; /* Centreert de disclaimertekst */
+}
+
+/* Als je de <small> tag gebruikt, kun je deze regel toevoegen */
+#disclaimer p small {
+  font-size: 0.7rem; /* Zorgt voor kleinere tekst binnen de <small> tag */
 }
 
 /* Responsieve aanpassingen */
@@ -158,6 +166,6 @@ button:hover {
   }
 
   #disclaimer {
-    font-size: 0.7rem;
+    font-size: 0.6rem; /* Nog kleinere tekst voor mobiele apparaten */
   }
 }
