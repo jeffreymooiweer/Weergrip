@@ -155,6 +155,8 @@ button:hover {
 
   #remspoor {
     width: 200px; /* Aanpassen voor kleinere schermen */
+    bottom: 44px;
+    left: 30px;
   }
 
   #animation-container {
