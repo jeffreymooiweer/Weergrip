@@ -135,7 +135,6 @@ function analyzeForecast(data, adviceTextElement) {
       <h3>Advies voor het wisselen van banden:</h3>
       <p>Op basis van de weersvoorspelling is het aanbevolen om winterbanden te gebruiken van <strong>${formatDate(startDate)}</strong> tot <strong>${formatDate(endDate)}</strong>.</p>
       <p>Dit is gebaseerd op minimaal ${requiredColdDays} dagen met temperaturen onder de ${temperatureThreshold}°C.</p>
-      <p><strong>Disclaimer:</strong> Hier mogen geen rechten aan ontleend worden. Ik ben niet aansprakelijk voor enige schade voortvloeiend uit het gebruik van deze informatie.</p>
     `;
   } else {
     // Advies voor zomerbanden
@@ -143,7 +142,6 @@ function analyzeForecast(data, adviceTextElement) {
       <h3>Advies voor het wisselen van banden:</h3>
       <p>Op basis van de weersvoorspelling is het aanbevolen om zomerbanden te gebruiken.</p>
       <p>De temperaturen blijven boven de ${temperatureThreshold}°C, wat optimale prestaties van zomerbanden garandeert.</p>
-      <p><strong>Disclaimer:</strong> Hier mogen geen rechten aan ontleend worden. Ik ben niet aansprakelijk voor enige schade voortvloeiend uit het gebruik van deze informatie.</p>
     `;
   }
 
