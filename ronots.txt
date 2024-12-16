@@ -1,0 +1,8 @@
+# robots.txt voor WeerGrip.nl
+
+# Toestaan dat alle zoekmachine-crawlers de hele site crawlen
+User-agent: *
+Disallow:
+
+# Specificeer de locatie van de sitemap
+Sitemap: https://www.weergrip.nl/sitemap.xml
