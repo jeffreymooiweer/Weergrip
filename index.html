@@ -54,7 +54,7 @@
 <body>
   <!-- Logo -->
   <div class="logo-container">
-    <img src="logo.svg" alt="WeerGrip Logo" id="logo">
+    <img src="logo.svg" alt="WeerGrip.nl Logo" id="logo" class="no-dark-mode">
   </div>
 
   <!-- Main Content -->
@@ -68,13 +68,30 @@
   <div id="animation-container">
     <!-- Car Container (contains car and remspoor) -->
     <div id="car-container">
-      <img id="car" src="tesla-car-svg-by-Vexels.svg" alt="Tesla Auto">
+      <!-- Inline SVG -->
+      <svg id="car" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" aria-labelledby="title">
+        <title id="title">Tesla Auto</title>
+        <!-- Voeg hier je geoptimaliseerde SVG-paden en elementen toe -->
+        <path d="..." fill="#000000" stroke="#FFFFFF"/>
+      </svg>
       <!-- Remspoor wordt dynamisch toegevoegd via JavaScript -->
     </div>
   </div>
 
   <!-- Advice Text -->
   <div id="advice-text"></div>
+
+  <!-- Extra Informatie -->
+  <div id="additional-info">
+    <h3>Waarom en wanneer winterbanden?</h3>
+    <p>Winterbanden bieden maximale grip en veiligheid bij koude temperaturen en op natte of besneeuwde wegen. Het rubber van winterbanden blijft elastisch bij lage temperaturen, wat essentieel is voor veilige rijprestaties.</p>
+    
+    <h3>Allseasonbanden vs. winterbanden</h3>
+    <p>Allseasonbanden kunnen een alternatief zijn voor winterbanden, maar ze werken vooral onder kleinere auto's en in kleinere bandenmaten. Voor grotere voertuigen en sportieve auto's adviseren we winterbanden vanwege hun superieure grip en prestaties onder winterse omstandigheden.</p>
+    
+    <h3>Wanneer moet je naar winterbanden wisselen?</h3>
+    <p>Vanaf het moment dat er kans is op vorst en/of de mogelijkheid van sneeuw toeneemt, is het aan te raden om op winterbanden te rijden. Een ezelsbruggetje: als de klok wordt verzet van zomer naar wintertijd en vice versa, is het ook tijd voor een bandenwissel van zomer- naar winterbanden en omgekeerd.</p>
+  </div>
 
   <!-- Disclaimer -->
   <div id="disclaimer">
