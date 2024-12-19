@@ -6,7 +6,6 @@ const apiKey = "API_KEY_PLACEHOLDER"; // Wordt vervangen door Visual Crossing AP
 async function getAdvice() {
   const adviceTextElement = document.getElementById("advice-text");
   const carContainer = document.getElementById("car-container");
-  const animationContainer = document.getElementById("animation-container");
 
   // Reset adviescontainer en animatie
   adviceTextElement.innerHTML = "";
@@ -76,7 +75,7 @@ async function getDeviceLocation() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        const geoApiUrl = `https://api.weathervisualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}/?key=${apiKey}&include=days&elements=datetime`;
+        const geoApiUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}/?key=${apiKey}&include=days&elements=datetime`;
 
         try {
           const response = await fetch(geoApiUrl);
@@ -134,7 +133,7 @@ function analyzeForecast(data, adviceTextElement) {
 
   if (longestColdSequence >= requiredColdDays) {
     // Advies voor winterbanden
-    const coldStartIndex = findStartIndex(forecastList, requiredColdDays, temperatureThreshold);
+    const coldStartIndex = findStartIndex(forecastList, requiredColdDays, temperatureThreshold, true);
     const startDate = new Date(forecastList[coldStartIndex].datetime);
     const endDate = new Date(forecastList[coldStartIndex + requiredColdDays - 1].datetime);
     adviceTextElement.innerHTML = `
