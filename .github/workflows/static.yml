@@ -28,7 +28,7 @@ jobs:
       - name: Inject API Key into script.js
         run: |
           echo "Injecting API key into script.js..."
-          sed -i "s/API_KEY_PLACEHOLDER/${{ secrets.OPENWEATHERMAP_API_KEY }}/g" script.js
+          sed -i "s/API_KEY_PLACEHOLDER/${{ secrets.VISUAL_CROSSING_KEY }}/g" script.js
 
       # Stap 3: Configureer GitHub Pages
       - name: Configure Pages
