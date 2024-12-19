@@ -58,6 +58,7 @@ async function loadAdvice() {
       );
     }
     const data = await response.json();
+    console.log(data); // Voor debugging
     analyzeForecast(data, adviceTextElement);
   } catch (error) {
     adviceTextElement.innerHTML = `<p>Error: ${error.message}</p>`;
@@ -75,7 +76,7 @@ async function getDeviceLocation() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        const geoApiUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}/?key=${apiKey}&include=days&elements=datetime`;
+        const geoApiUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}/?key=${apiKey}&include=days&elements=datetime,resolvedAddress`;
 
         try {
           const response = await fetch(geoApiUrl);
