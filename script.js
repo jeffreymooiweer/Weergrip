@@ -1,6 +1,6 @@
 // script.js
 
-const apiKey = "API_KEY_PLACEHOLDER"; // Wordt vervangen door Visual Crossing API-sleutel
+const apiKey = "API_KEY_PLACEHOLDER"; // Wordt vervangen door Visual Crossing API-sleutels
 
 // Functie om het "Advies Krijgen" button click te verwerken
 async function getAdvice() {
