@@ -1,6 +1,6 @@
 // script.js
 
-const apiKey = "API_KEY_PLACEHOLDER"; // Wordt vervangen door Visual Crossing API-sleutels
+const apiKey = "API_KEY_PLACEHOLDER"; // Wordt vervangen door Visual Crossing API-sleutel
 
 // Functie om het "Advies Krijgen" button click te verwerken
 async function getAdvice() {
@@ -48,7 +48,8 @@ async function loadAdvice() {
     return;
   }
 
-  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}/15day?unitGroup=metric&key=${apiKey}&contentType=json`;
+  // Correcte API URL zonder '/15day'
+  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}?unitGroup=metric&key=${apiKey}&contentType=json`;
 
   try {
     const response = await fetch(url);
@@ -62,6 +63,7 @@ async function loadAdvice() {
     analyzeForecast(data, adviceTextElement);
   } catch (error) {
     adviceTextElement.innerHTML = `<p>Error: ${error.message}</p>`;
+    console.error("API Error:", error);
   }
 }
 
@@ -74,24 +76,10 @@ async function getDeviceLocation() {
 
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const { latitude, longitude } = position.coords;
-        const geoApiUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}/?key=${apiKey}&include=days&elements=datetime,resolvedAddress`;
-
-        try {
-          const response = await fetch(geoApiUrl);
-          if (!response.ok) {
-            throw new Error("Geocoding API gaf een fout.");
-          }
-          const geoData = await response.json();
-          if (geoData && geoData.resolvedAddress) {
-            resolve(geoData.resolvedAddress);
-          } else {
-            resolve("Amsterdam");
-          }
-        } catch {
-          resolve("Amsterdam"); // Fallbacklocatie
-        }
+        const locationString = `${latitude},${longitude}`;
+        resolve(locationString);
       },
       () => resolve("Amsterdam") // Fallbacklocatie bij fout
     );
@@ -101,16 +89,14 @@ async function getDeviceLocation() {
 // Functie om de weersvoorspelling te analyseren en de beste dag te bepalen
 function analyzeForecast(data, adviceTextElement) {
   const forecastList = data.days;
-  let coldDays = 0;
-  let warmDays = 0;
+  let longestColdSequence = 0;
+  let longestWarmSequence = 0;
   const requiredColdDays = 14; // Aantal dagen voor winterbanden
   const requiredWarmDays = 14; // Aantal dagen voor zomerbanden
   const temperatureThreshold = 7; // Graden Celsius
 
   let currentColdDays = 0;
   let currentWarmDays = 0;
-  let longestColdSequence = 0;
-  let longestWarmSequence = 0;
 
   // Detecteer de langste reeks koude en warme dagen
   forecastList.forEach(day => {
