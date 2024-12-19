@@ -1,6 +1,6 @@
 // script.js
 
-const apiKey = "API_KEY_PLACEHOLDER"; // Vervang met jouw API-sleutel
+const apiKey = "API_KEY_PLACEHOLDER"; // Wordt vervangen door Visual Crossing API-sleutel
 
 // Functie om het "Advies Krijgen" button click te verwerken
 async function getAdvice() {
@@ -49,9 +49,7 @@ async function loadAdvice() {
     return;
   }
 
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
-    location
-  )}&units=metric&appid=${apiKey}`;
+  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}/15day?unitGroup=metric&key=${apiKey}&contentType=json`;
 
   try {
     const response = await fetch(url);
@@ -78,16 +76,16 @@ async function getDeviceLocation() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        const geoApiUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${apiKey}`;
+        const geoApiUrl = `https://api.weathervisualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}/?key=${apiKey}&include=days&elements=datetime`;
 
         try {
           const response = await fetch(geoApiUrl);
           if (!response.ok) {
             throw new Error("Geocoding API gaf een fout.");
           }
-          const [geoData] = await response.json();
-          if (geoData && geoData.name) {
-            resolve(geoData.name);
+          const geoData = await response.json();
+          if (geoData && geoData.resolvedAddress) {
+            resolve(geoData.resolvedAddress);
           } else {
             resolve("Amsterdam");
           }
@@ -102,60 +100,65 @@ async function getDeviceLocation() {
 
 // Functie om de weersvoorspelling te analyseren en de beste dag te bepalen
 function analyzeForecast(data, adviceTextElement) {
-  const forecastList = data.list;
+  const forecastList = data.days;
   let coldDays = 0;
   let warmDays = 0;
   const requiredColdDays = 14; // Aantal dagen voor winterbanden
   const requiredWarmDays = 14; // Aantal dagen voor zomerbanden
   const temperatureThreshold = 7; // Graden Celsius
 
-  // Loop door de forecast data om te zoeken naar een periode van koude of warme dagen
-  for (let i = 0; i < forecastList.length; i++) {
-    const item = forecastList[i];
-    const temp = item.main.temp_min;
+  let currentColdDays = 0;
+  let currentWarmDays = 0;
+  let longestColdSequence = 0;
+  let longestWarmSequence = 0;
 
-    if (temp < temperatureThreshold) {
-      coldDays++;
-      warmDays = 0; // Reset warme dagen
-      if (coldDays >= requiredColdDays) {
-        break;
+  // Detecteer de langste reeks koude en warme dagen
+  forecastList.forEach(day => {
+    const minTemp = day.tempmin;
+    const maxTemp = day.tempmax;
+
+    if (minTemp < temperatureThreshold) {
+      currentColdDays++;
+      currentWarmDays = 0;
+      if (currentColdDays > longestColdSequence) {
+        longestColdSequence = currentColdDays;
       }
     } else {
-      warmDays++;
-      coldDays = 0; // Reset koude dagen
-      if (warmDays >= requiredWarmDays) {
-        break;
+      currentWarmDays++;
+      currentColdDays = 0;
+      if (currentWarmDays > longestWarmSequence) {
+        longestWarmSequence = currentWarmDays;
       }
     }
-  }
+  });
 
-  if (coldDays >= requiredColdDays) {
+  if (longestColdSequence >= requiredColdDays) {
     // Advies voor winterbanden
-    const startIndex = findStartIndex(forecastList, requiredColdDays, temperatureThreshold);
-    const endIndex = startIndex + requiredColdDays - 1;
-    const startDate = new Date(forecastList[startIndex].dt_txt);
-    const endDate = new Date(forecastList[endIndex].dt_txt);
+    const coldStartIndex = findStartIndex(forecastList, requiredColdDays, temperatureThreshold);
+    const startDate = new Date(forecastList[coldStartIndex].datetime);
+    const endDate = new Date(forecastList[coldStartIndex + requiredColdDays - 1].datetime);
     adviceTextElement.innerHTML = `
       <h3>Advies voor het wisselen van banden:</h3>
       <p>Op basis van de weersvoorspelling is het aanbevolen om winterbanden te gebruiken van <strong>${formatDate(startDate)}</strong> tot <strong>${formatDate(endDate)}</strong>.</p>
       <p>Dit is gebaseerd op minimaal ${requiredColdDays} dagen met temperaturen onder de ${temperatureThreshold}°C.</p>
+      <p>Winterbanden bieden maximale grip en veiligheid bij koude temperaturen en op natte of besneeuwde wegen. Het rubber van winterbanden blijft elastisch bij lage temperaturen, wat essentieel is voor veilige rijprestaties.</p>
     `;
-  } else if (warmDays >= requiredWarmDays) {
+  } else if (longestWarmSequence >= requiredWarmDays) {
     // Advies voor zomerbanden
-    const startIndex = findStartIndex(forecastList, requiredWarmDays, temperatureThreshold, false);
-    const endIndex = startIndex + requiredWarmDays - 1;
-    const startDate = new Date(forecastList[startIndex].dt_txt);
-    const endDate = new Date(forecastList[endIndex].dt_txt);
+    const warmStartIndex = findStartIndex(forecastList, requiredWarmDays, temperatureThreshold, false);
+    const startDate = new Date(forecastList[warmStartIndex].datetime);
+    const endDate = new Date(forecastList[warmStartIndex + requiredWarmDays - 1].datetime);
     adviceTextElement.innerHTML = `
       <h3>Advies voor het wisselen van banden:</h3>
       <p>Op basis van de weersvoorspelling is het aanbevolen om zomerbanden te gebruiken van <strong>${formatDate(startDate)}</strong> tot <strong>${formatDate(endDate)}</strong>.</p>
       <p>Dit is gebaseerd op minimaal ${requiredWarmDays} dagen met temperaturen boven de ${temperatureThreshold}°C.</p>
+      <p>Zomerbanden zijn geoptimaliseerd voor warme temperaturen en bieden betere prestaties en efficiëntie tijdens warme seizoenen. Ze hebben een harder rubbermengsel dat beter presteert bij hogere temperaturen.</p>
     `;
   } else {
     // Geen duidelijke aanbeveling
     adviceTextElement.innerHTML = `
       <h3>Advies voor het wisselen van banden:</h3>
-      <p>Op basis van de huidige weersvoorspellingen is er geen duidelijke aanbeveling om banden te wisselen. Blijf de weersvoorspellingen volgen en pas je banden aan wanneer nodig.</p>
+      <p>Op basis van de huidige weersvoorspellingen is er geen duidelijke aanbeveling om banden te wisselen. Blijf de weersvoorspellingen volgen en pas je banden aan wanneer langdurige koude of warme periodes worden voorspeld.</p>
     `;
   }
 
@@ -165,13 +168,15 @@ function analyzeForecast(data, adviceTextElement) {
 // Hulpfunctie om de startindex te vinden van de periode
 function findStartIndex(forecastList, requiredDays, threshold, isCold = true) {
   let count = 0;
+  let startIndex = 0;
+
   for (let i = 0; i < forecastList.length; i++) {
-    const temp = forecastList[i].main.temp_min;
+    const temp = isCold ? forecastList[i].tempmin : forecastList[i].tempmax;
     if ((isCold && temp < threshold) || (!isCold && temp > threshold)) {
-      count++;
-      if (count === 1) {
+      if (count === 0) {
         startIndex = i;
       }
+      count++;
       if (count >= requiredDays) {
         return startIndex;
       }
