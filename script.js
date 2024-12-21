@@ -3,69 +3,11 @@
 const meteostatApiKey = 'METEOSTAT_KEY_PLACEHOLDER'; // Wordt vervangen door GitHub Actions
 const visualCrossingApiKey = 'VISUAL_CROSSING_KEY_PLACEHOLDER'; // Wordt vervangen door GitHub Actions
 
-// Functie om weerstations in Nederland op te halen
-async function fetchStations() {
-  const country = 'NL'; // Nederland
-
-  const url = `https://meteostat.p.rapidapi.com/stations/search?country=${country}&limit=100`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': meteostatApiKey,
-        'X-RapidAPI-Host': 'meteostat.p.rapidapi.com'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Fout bij het ophalen van weerstations.');
-    }
-
-    const data = await response.json();
-    console.log(data); // Voor debugging
-
-    return data.data; // Array van weerstations
-  } catch (error) {
-    console.error('API Error:', error);
-    return [];
-  }
-}
-
-// Functie om te controleren of een station klimaatnormen heeft
-async function hasClimateNormals(stationId) {
-  const startYear = 1991; // Startjaar voor klimaatnormen
-  const endYear = 2020;   // Eindjaar voor klimaatnormen
-
-  const url = `https://meteostat.p.rapidapi.com/climate/normals?station=${stationId}&start=${startYear}&end=${endYear}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': meteostatApiKey,
-        'X-RapidAPI-Host': 'meteostat.p.rapidapi.com'
-      }
-    });
-
-    if (!response.ok) {
-      // Als response niet ok is, betekent dit waarschijnlijk dat er geen klimaatnormen zijn
-      return false;
-    }
-
-    const data = await response.json();
-    return data.data && data.data.length > 0;
-  } catch (error) {
-    console.error(`Fout bij het controleren van klimaatnormen voor station ${stationId}:`, error);
-    return false;
-  }
-}
-
-// Functie om klimaatnormen op te halen voor een station
-async function fetchClimateNormalsForStation(stationId) {
+// Functie om Amsterdam Schiphol klimaatnormen op te halen
+async function fetchClimateNormalsForAmsterdam() {
+  const stationId = '72295'; // Station ID voor Amsterdam Schiphol
   const startYear = 1991;
   const endYear = 2020;
-
   const url = `https://meteostat.p.rapidapi.com/climate/normals?station=${stationId}&start=${startYear}&end=${endYear}`;
 
   try {
@@ -78,11 +20,11 @@ async function fetchClimateNormalsForStation(stationId) {
     });
 
     if (!response.ok) {
-      throw new Error('Fout bij het ophalen van klimaatnormen.');
+      throw new Error('Fout bij het ophalen van klimaatnormen voor Amsterdam Schiphol.');
     }
 
     const data = await response.json();
-    console.log(data); // Voor debugging
+    console.log("Climate Normals Data (Amsterdam Schiphol):", data); // Voor debugging
 
     return data.data; // Array van klimaatnormen per maand
   } catch (error) {
@@ -91,78 +33,28 @@ async function fetchClimateNormalsForStation(stationId) {
   }
 }
 
-// Functie om klimaatnormen te verwerken en nationale gemiddelden te berekenen
-function processClimateData(climateDataList) {
-  if (!climateDataList || climateDataList.length === 0) {
-    console.error('Geen klimaatgegevens beschikbaar.');
+// Functie om nationale klimaatnormen te verkrijgen via Amsterdam Schiphol
+async function getNationalClimateData() {
+  const climateData = await fetchClimateNormalsForAmsterdam();
+
+  if (!climateData) {
+    console.error('Kon de klimaatnormen voor Amsterdam Schiphol niet ophalen.');
     return null;
   }
-
-  const monthlyData = {};
-
-  climateDataList.forEach(data => {
-    data.forEach(monthData => {
-      const month = monthData.month; // Maandnummer (1-12)
-      if (!monthlyData[month]) {
-        monthlyData[month] = { tmin: 0, tmax: 0, count: 0 };
-      }
-      monthlyData[month].tmin += parseFloat(monthData.tmin);
-      monthlyData[month].tmax += parseFloat(monthData.tmax);
-      monthlyData[month].count += 1;
-    });
-  });
 
   const averageMinTemps = {};
   const averageMaxTemps = {};
 
-  for (let month = 1; month <= 12; month++) {
-    if (monthlyData[month] && monthlyData[month].count > 0) {
-      averageMinTemps[month] = (monthlyData[month].tmin / monthlyData[month].count).toFixed(1);
-      averageMaxTemps[month] = (monthlyData[month].tmax / monthlyData[month].count).toFixed(1);
-    } else {
-      // Als er geen data beschikbaar is voor deze maand
-      averageMinTemps[month] = null;
-      averageMaxTemps[month] = null;
-    }
-  }
+  climateData.forEach(monthData => {
+    const month = monthData.month; // Maandnummer (1-12)
+    averageMinTemps[month] = parseFloat(monthData.tmin).toFixed(1); // Gemiddelde minimumtemperatuur
+    averageMaxTemps[month] = parseFloat(monthData.tmax).toFixed(1); // Gemiddelde maximumtemperatuur
+  });
 
-  console.log('Gemiddelde Minimumtemperaturen (Nationale):', averageMinTemps);
-  console.log('Gemiddelde Maximumtemperaturen (Nationale):', averageMaxTemps);
+  console.log('Gemiddelde Minimumtemperaturen (Amsterdam Schiphol):', averageMinTemps);
+  console.log('Gemiddelde Maximumtemperaturen (Amsterdam Schiphol):', averageMaxTemps);
 
   return { averageMinTemps, averageMaxTemps };
-}
-
-// Functie om een geschikt weerstation te selecteren en klimaatnormen op te halen
-async function getNationalClimateData() {
-  const stations = await fetchStations();
-
-  if (stations.length === 0) {
-    console.error('Geen weerstations beschikbaar.');
-    return null;
-  }
-
-  // Selecteer weerstations met klimaatnormen
-  const stationsWithNormals = [];
-  for (let station of stations) {
-    const hasNormals = await hasClimateNormals(station.id);
-    if (hasNormals) {
-      stationsWithNormals.push(station);
-    }
-  }
-
-  if (stationsWithNormals.length === 0) {
-    console.error('Geen weerstations gevonden met klimaatnormen.');
-    return null;
-  }
-
-  // Haal klimaatnormen op van alle geselecteerde stations
-  const climateDataPromises = stationsWithNormals.map(station => fetchClimateNormalsForStation(station.id));
-  const climateDataList = await Promise.all(climateDataPromises);
-
-  // Verwerk de klimaatgegevens om nationale gemiddelden te berekenen
-  const processedClimateData = processClimateData(climateDataList.filter(data => data !== null));
-
-  return processedClimateData;
 }
 
 // Functie om de 15-daagse weersvoorspelling op te halen via Visual Crossing
@@ -175,7 +67,7 @@ async function fetchForecastData(location) {
       throw new Error("Locatie niet gevonden. Controleer of je locatie correct is ingesteld.");
     }
     const data = await response.json();
-    console.log(data); // Voor debugging
+    console.log("Forecast Data:", data); // Voor debugging
     return data;
   } catch (error) {
     console.error("API Error:", error);
@@ -183,7 +75,7 @@ async function fetchForecastData(location) {
   }
 }
 
-// Functie om de locatie van de gebruiker te verkrijgen, met fallback naar landelijk gemiddelde
+// Functie om de locatie van de gebruiker te verkrijgen, met fallback naar 'Netherlands'
 async function getDeviceLocation() {
   if (!navigator.geolocation) {
     console.warn("Geolocatie niet beschikbaar. Gebruik landelijk gemiddelde.");
@@ -241,7 +133,7 @@ async function loadAdvice() {
   adviceTextElement.innerHTML = "<p>Advies wordt geladen...</p>";
   adviceTextElement.classList.add("show");
 
-  // Haal nationale klimaatgegevens op
+  // Haal nationale klimaatgegevens op via Amsterdam Schiphol
   const climateData = await getNationalClimateData();
   if (!climateData) {
     adviceTextElement.innerHTML = `<p>Kon de klimaatgegevens niet ophalen.</p>`;
@@ -320,7 +212,7 @@ function analyzeForecast(data, averageMinTemps, averageMaxTemps, adviceTextEleme
   if (winterStartDate) {
     advice.winter = winterStartDate;
   } else {
-    // Gebruik historische gemiddelde data
+    // Gebruik historische gemiddelde data (Amsterdam Schiphol)
     const currentMonth = today.getMonth() + 1;
     let recommendedMonth = null;
     for (let m = currentMonth; m <= 12; m++) {
@@ -350,7 +242,7 @@ function analyzeForecast(data, averageMinTemps, averageMaxTemps, adviceTextEleme
   if (summerStartDate) {
     advice.summer = summerStartDate;
   } else {
-    // Gebruik historische gemiddelde data
+    // Gebruik historische gemiddelde data (Amsterdam Schiphol)
     const currentMonth = today.getMonth() + 1;
     let recommendedSummerMonth = null;
     for (let m = currentMonth; m <= 12; m++) {
