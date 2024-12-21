@@ -5,7 +5,7 @@ const visualCrossingApiKey = 'VISUAL_CROSSING_KEY_PLACEHOLDER'; // Wordt vervang
 
 // Functie om Amsterdam Schiphol klimaatnormen op te halen
 async function fetchClimateNormalsForAmsterdam() {
-  const stationId = '72295'; // Station ID voor Amsterdam Schiphol
+  const stationId = '06240'; // Station ID voor Amsterdam Schiphol
   const startYear = 1991;
   const endYear = 2020;
   const url = `https://meteostat.p.rapidapi.com/climate/normals?station=${stationId}&start=${startYear}&end=${endYear}`;
