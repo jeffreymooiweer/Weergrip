@@ -1,3 +1,5 @@
+# .github/workflows/deploy.yml
+
 # Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
@@ -24,11 +26,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Stap 2: Injecteer de API-sleutel in script.js
-      - name: Inject API Key into script.js
+      # Stap 2: Injecteer de API-sleutels in script.js
+      - name: Inject API Keys into script.js
         run: |
-          echo "Injecting API key into script.js..."
-          sed -i "s/API_KEY_PLACEHOLDER/${{ secrets.VISUAL_CROSSING_KEY }}/g" script.js
+          echo "Injecting API keys into script.js..."
+          sed -i "s/METEOSTAT_KEY_PLACEHOLDER/${{ secrets.METEOSTAT_KEY }}/g" script.js
+          sed -i "s/VISUAL_CROSSING_KEY_PLACEHOLDER/${{ secrets.VISUAL_CROSSING_KEY }}/g" script.js
 
       # Stap 3: Configureer GitHub Pages
       - name: Configure Pages
