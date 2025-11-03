@@ -1,36 +1,33 @@
 // script.js
 
-const meteostatApiKey = 'METEOSTAT_KEY_PLACEHOLDER'; // Wordt vervangen door GitHub Actions
-const visualCrossingApiKey = 'VISUAL_CROSSING_KEY_PLACEHOLDER'; // Wordt vervangen door GitHub Actions
-
 const fallbackClimateData = {
   averageMinTemps: {
-    1: '0.9',
-    2: '1.0',
-    3: '2.8',
-    4: '5.3',
-    5: '8.9',
-    6: '12.0',
-    7: '14.3',
-    8: '14.1',
-    9: '11.5',
-    10: '8.1',
-    11: '4.2',
-    12: '1.6'
+    1: 0.9,
+    2: 1.0,
+    3: 2.8,
+    4: 5.3,
+    5: 8.9,
+    6: 12.0,
+    7: 14.3,
+    8: 14.1,
+    9: 11.5,
+    10: 8.1,
+    11: 4.2,
+    12: 1.6
   },
   averageMaxTemps: {
-    1: '5.5',
-    2: '6.3',
-    3: '9.4',
-    4: '13.3',
-    5: '17.2',
-    6: '20.0',
-    7: '22.3',
-    8: '22.4',
-    9: '19.2',
-    10: '14.4',
-    11: '9.3',
-    12: '6.0'
+    1: 5.5,
+    2: 6.3,
+    3: 9.4,
+    4: 13.3,
+    5: 17.2,
+    6: 20.0,
+    7: 22.3,
+    8: 22.4,
+    9: 19.2,
+    10: 14.4,
+    11: 9.3,
+    12: 6.0
   },
   source: 'fallback'
 };
@@ -40,7 +37,7 @@ function generateFallbackForecastData() {
   const currentMonth = today.getMonth();
   const isWinterSeason = currentMonth <= 2 || currentMonth >= 9; // Jan-Mar & Oct-Dec
 
-  const days = Array.from({ length: 15 }, (_, index) => {
+  const days = Array.from({ length: 16 }, (_, index) => {
     const date = new Date(today);
     date.setDate(today.getDate() + index);
     const datetime = date.toISOString().split('T')[0];
@@ -49,11 +46,11 @@ function generateFallbackForecastData() {
     let tempmax;
 
     if (isWinterSeason) {
-      tempmin = 2 + Math.sin(index / 3) * 1.2; // onder 7?C
+      tempmin = 2 + Math.sin(index / 3) * 1.2; // onder 7 graden Celsius
       tempmax = 5 + Math.sin(index / 2.5) * 1.5;
     } else {
       tempmin = 10 + Math.sin(index / 3) * 1.8;
-      tempmax = 18 + Math.sin(index / 2.5) * 2.2; // boven 7?C
+      tempmax = 18 + Math.sin(index / 2.5) * 2.2; // boven 7 graden Celsius
     }
 
     return {
@@ -66,112 +63,90 @@ function generateFallbackForecastData() {
   return { days, source: 'fallback' };
 }
 
-// Functie om Amsterdam Schiphol klimaatnormen op te halen
-async function fetchClimateNormalsForAmsterdam() {
-  const stationId = '06240'; // Station ID voor Amsterdam Schiphol
-  const startYear = 1991;
-  const endYear = 2020;
-  const url = `https://meteostat.p.rapidapi.com/climate/normals?station=${stationId}&start=${startYear}&end=${endYear}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': meteostatApiKey,
-        'X-RapidAPI-Host': 'meteostat.p.rapidapi.com'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Fout bij het ophalen van klimaatnormen voor Amsterdam Schiphol.');
-    }
-
-    const data = await response.json();
-    console.log("Climate Normals Data (Amsterdam Schiphol):", data); // Voor debugging
-
-    return data.data; // Array van klimaatnormen per maand
-  } catch (error) {
-    console.error('API Error:', error);
-    return null;
-  }
+// Functie om klimaatgegevens te verkrijgen (statisch)
+async function getClimateData() {
+  return {
+    averageMinTemps: { ...fallbackClimateData.averageMinTemps },
+    averageMaxTemps: { ...fallbackClimateData.averageMaxTemps },
+    source: 'static'
+  };
 }
 
-// Functie om nationale klimaatnormen te verkrijgen via Amsterdam Schiphol
-async function getNationalClimateData() {
-  if (!meteostatApiKey || meteostatApiKey.includes('PLACEHOLDER')) {
-    console.warn('Meteostat API key ontbreekt. Gebruik fallback klimaatgegevens.');
-    return {
-      averageMinTemps: { ...fallbackClimateData.averageMinTemps },
-      averageMaxTemps: { ...fallbackClimateData.averageMaxTemps },
-      source: fallbackClimateData.source
-    };
-  }
-
-  const climateData = await fetchClimateNormalsForAmsterdam();
-
-  if (!climateData) {
-    console.error('Kon de klimaatnormen voor Amsterdam Schiphol niet ophalen. Gebruik fallback klimaatgegevens.');
-    return {
-      averageMinTemps: { ...fallbackClimateData.averageMinTemps },
-      averageMaxTemps: { ...fallbackClimateData.averageMaxTemps },
-      source: fallbackClimateData.source
-    };
-  }
-
-  const averageMinTemps = {};
-  const averageMaxTemps = {};
-
-  climateData.forEach(monthData => {
-    const month = monthData.month; // Maandnummer (1-12)
-    averageMinTemps[month] = parseFloat(monthData.tmin).toFixed(1); // Gemiddelde minimumtemperatuur
-    averageMaxTemps[month] = parseFloat(monthData.tmax).toFixed(1); // Gemiddelde maximumtemperatuur
+// Functie om de 16-daagse weersvoorspelling op te halen via Open-Meteo
+async function fetchForecastData({ latitude, longitude }) {
+  const params = new URLSearchParams({
+    latitude: latitude.toFixed(4),
+    longitude: longitude.toFixed(4),
+    daily: 'temperature_2m_max,temperature_2m_min',
+    timezone: 'auto',
+    forecast_days: '16'
   });
 
-  console.log('Gemiddelde Minimumtemperaturen (Amsterdam Schiphol):', averageMinTemps);
-  console.log('Gemiddelde Maximumtemperaturen (Amsterdam Schiphol):', averageMaxTemps);
-
-  return { averageMinTemps, averageMaxTemps, source: 'meteostat' };
-}
-
-// Functie om de 15-daagse weersvoorspelling op te halen via Visual Crossing
-async function fetchForecastData(location) {
-  if (!visualCrossingApiKey || visualCrossingApiKey.includes('PLACEHOLDER')) {
-    console.warn('Visual Crossing API key ontbreekt. Gebruik fallback voorspelling.');
-    return generateFallbackForecastData();
-  }
-
-  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}?unitGroup=metric&key=${visualCrossingApiKey}&contentType=json&include=days`;
+  const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error("Locatie niet gevonden. Controleer of je locatie correct is ingesteld.");
+      throw new Error('Kon de Open-Meteo voorspelling niet ophalen.');
     }
+
     const data = await response.json();
-    console.log("Forecast Data:", data); // Voor debugging
-    return { ...data, source: 'visualcrossing' };
+    const { daily } = data || {};
+
+    if (!daily || !Array.isArray(daily.time)) {
+      throw new Error('Open-Meteo response mist daggegevens.');
+    }
+
+    const days = daily.time.map((dateStr, index) => {
+      const minTemp = daily.temperature_2m_min?.[index];
+      const maxTemp = daily.temperature_2m_max?.[index];
+
+      return {
+        datetime: dateStr,
+        tempmin: typeof minTemp === 'number' ? Math.round(minTemp * 10) / 10 : null,
+        tempmax: typeof maxTemp === 'number' ? Math.round(maxTemp * 10) / 10 : null
+      };
+    }).filter(day => day.tempmin !== null && day.tempmax !== null);
+
+    console.log('Forecast Data (Open-Meteo):', { latitude, longitude, days });
+
+    if (!days.length) {
+      throw new Error('Open-Meteo leverde geen bruikbare daggegevens.');
+    }
+
+    return { days, source: 'open-meteo' };
   } catch (error) {
-    console.error("API Error:", error);
+    console.error('Open-Meteo API Error:', error);
     console.warn('Gebruik fallback voorspelling.');
     return generateFallbackForecastData();
   }
 }
 
-// Functie om de locatie van de gebruiker te verkrijgen, met fallback naar 'Netherlands'
+// Functie om de locatie van de gebruiker te verkrijgen, met fallback naar Nederland
 async function getDeviceLocation() {
+  const defaultLocation = {
+    latitude: 52.1326,
+    longitude: 5.2913,
+    label: 'Nederland'
+  };
+
   if (!navigator.geolocation) {
-    console.warn("Geolocatie niet beschikbaar. Gebruik landelijk gemiddelde.");
-    return "Netherlands"; // Fallbacklocatie
+    console.warn('Geolocatie niet beschikbaar. Gebruik landelijk gemiddelde.');
+    return defaultLocation;
   }
 
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const locationString = `${latitude},${longitude}`;
-        resolve(locationString);
+        resolve({ latitude, longitude, label: 'Je locatie' });
       },
-      () => resolve("Netherlands") // Fallbacklocatie bij fout
+      () => resolve(defaultLocation),
+      {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 15 * 60 * 1000
+      }
     );
   });
 }
@@ -215,21 +190,21 @@ async function loadAdvice() {
   adviceTextElement.innerHTML = "<p>Advies wordt geladen...</p>";
   adviceTextElement.classList.add("show");
 
-  // Haal nationale klimaatgegevens op via Amsterdam Schiphol
-  const climateData = await getNationalClimateData();
+  // Haal klimaatgegevens op (statisch gemiddelde Nederland)
+  const climateData = await getClimateData();
   const { averageMinTemps, averageMaxTemps, source: climateSource } = climateData;
 
-  // Haal forecast data op via Visual Crossing
+  // Haal dagelijkse voorspelling op via Open-Meteo
   const location = await getDeviceLocation();
   const forecastData = await fetchForecastData(location);
-  const forecastSource = forecastData.source || 'visualcrossing';
+  const forecastSource = forecastData.source || 'open-meteo';
 
   analyzeForecast(
     forecastData,
     averageMinTemps,
     averageMaxTemps,
     adviceTextElement,
-    { climateSource, forecastSource }
+    { climateSource, forecastSource, locationLabel: location.label }
   );
 }
 
@@ -357,14 +332,14 @@ function analyzeForecast(data, averageMinTemps, averageMaxTemps, adviceTextEleme
       adviceText += `
         <h3>Advies voor het wisselen van banden:</h3>
         <p>Het is aanbevolen om vandaag winterbanden te gebruiken.</p>
-        <p>Dit is gebaseerd op verwachte temperaturen onder de ${requiredMinTempThreshold}?C.</p>
+        <p>Dit is gebaseerd op verwachte temperaturen onder de ${requiredMinTempThreshold}&deg;C.</p>
         <p>Winterbanden bieden maximale grip en veiligheid bij koude temperaturen en op natte of besneeuwde wegen. Het rubber van winterbanden blijft elastisch bij lage temperaturen, wat essentieel is voor veilige rijprestaties.</p>
       `;
     } else if (advice.winter > today) {
       adviceText += `
         <h3>Advies voor het wisselen van banden:</h3>
         <p>Op basis van de weersvoorspelling is het aanbevolen om winterbanden te gebruiken op <strong>${formatDate(advice.winter)}</strong>.</p>
-        <p>Dit is gebaseerd op verwachte temperaturen onder de ${requiredMinTempThreshold}?C.</p>
+        <p>Dit is gebaseerd op verwachte temperaturen onder de ${requiredMinTempThreshold}&deg;C.</p>
         <p>Winterbanden bieden maximale grip en veiligheid bij koude temperaturen en op natte of besneeuwde wegen. Het rubber van winterbanden blijft elastisch bij lage temperaturen, wat essentieel is voor veilige rijprestaties.</p>
       `;
     } else if (advice.winter < today) {
@@ -381,15 +356,15 @@ function analyzeForecast(data, averageMinTemps, averageMaxTemps, adviceTextEleme
       adviceText += `
         <h3>Advies voor het wisselen van banden:</h3>
         <p>Het is aanbevolen om vandaag zomerbanden te gebruiken.</p>
-        <p>Dit is gebaseerd op verwachte temperaturen boven de ${requiredMaxTempThreshold}?C.</p>
-        <p>Zomerbanden zijn geoptimaliseerd voor warme temperaturen en bieden betere prestaties en effici?ntie tijdens warme seizoenen. Ze hebben een harder rubbermengsel dat beter presteert bij hogere temperaturen.</p>
+        <p>Dit is gebaseerd op verwachte temperaturen boven de ${requiredMaxTempThreshold}&deg;C.</p>
+        <p>Zomerbanden zijn geoptimaliseerd voor warme temperaturen en bieden betere prestaties en efficientie tijdens warme seizoenen. Ze hebben een harder rubbermengsel dat beter presteert bij hogere temperaturen.</p>
       `;
     } else if (advice.summer > today) {
       adviceText += `
         <h3>Advies voor het wisselen van banden:</h3>
         <p>Op basis van de weersvoorspelling is het aanbevolen om zomerbanden te gebruiken op <strong>${formatDate(advice.summer)}</strong>.</p>
-        <p>Dit is gebaseerd op verwachte temperaturen boven de ${requiredMaxTempThreshold}?C.</p>
-        <p>Zomerbanden zijn geoptimaliseerd voor warme temperaturen en bieden betere prestaties en effici?ntie tijdens warme seizoenen. Ze hebben een harder rubbermengsel dat beter presteert bij hogere temperaturen.</p>
+        <p>Dit is gebaseerd op verwachte temperaturen boven de ${requiredMaxTempThreshold}&deg;C.</p>
+        <p>Zomerbanden zijn geoptimaliseerd voor warme temperaturen en bieden betere prestaties en efficientie tijdens warme seizoenen. Ze hebben een harder rubbermengsel dat beter presteert bij hogere temperaturen.</p>
       `;
     } else if (advice.summer < today) {
       adviceText += `
@@ -407,9 +382,21 @@ function analyzeForecast(data, averageMinTemps, averageMaxTemps, adviceTextEleme
     `;
   }
 
+  if (sources.climateSource === 'static') {
+    adviceText += `
+      <p class="data-note">Klimaatgegevens zijn gebaseerd op langjarig Nederlands gemiddelde (statisch).</p>
+    `;
+  }
+
   if (sources.climateSource === 'fallback' || sources.forecastSource === 'fallback') {
     adviceText += `
       <p class="data-note">Let op: dit advies is gebaseerd op voorbeeldgegevens omdat de live weerservices niet beschikbaar zijn.</p>
+    `;
+  }
+
+  if (sources.locationLabel) {
+    adviceText += `
+      <p class="data-note">Locatie gebruikt: ${sources.locationLabel}.</p>
     `;
   }
 
