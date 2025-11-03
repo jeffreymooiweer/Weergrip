@@ -115,6 +115,12 @@ button:hover {
   opacity: 1;
 }
 
+.data-note {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #d0d0d0;
+}
+
 /* Disclaimer stijl */
 #disclaimer {
   margin-top: 40px;
